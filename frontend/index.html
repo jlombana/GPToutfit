@@ -1896,6 +1896,110 @@
             padding: 4px 12px;
             border-radius: 999px;
         }
+        .clear-results-btn {
+            margin-left: auto;
+            padding: 6px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.82rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .clear-results-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .match-card-dismiss {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 14px;
+            line-height: 24px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        .match-card:hover .match-card-dismiss {
+            opacity: 1;
+        }
+        .discover-card { position: relative; }
+        .discover-card-dismiss {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 22px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        .discover-card:hover .discover-card-dismiss {
+            opacity: 1;
+        }
+        /* FR-49 Edit Event Modal */
+        .edit-event-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-event-modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 32px;
+            width: 420px;
+            max-width: 90vw;
+            box-shadow: var(--shadow-lg);
+        }
+        .edit-event-modal h3 {
+            font-family: "Fraunces", serif;
+            margin-bottom: 20px;
+        }
+        .edit-event-modal label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 4px;
+            margin-top: 12px;
+        }
+        .edit-event-modal input,
+        .edit-event-modal textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .edit-event-modal .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
 
         /* --- OUTFIT BOARD (FR-16) --- */
         .outfit-board {
@@ -2351,13 +2455,14 @@
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
             </button>
-            <button class="nav-icon-btn" aria-label="My Account" title="My Account">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-            </button>
+            <!-- Auth: Sign In / User display (FR-43) -->
+            <div id="authArea" style="display:flex;align-items:center;gap:10px;">
+                <button id="signInBtn" onclick="openLoginModal()" style="font-size:13px;font-weight:500;letter-spacing:0.04em;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 16px;cursor:pointer;font-family:inherit;color:var(--ink);transition:all 0.2s;">Sign In</button>
+                <span id="userDisplay" class="hidden" style="font-size:13px;font-weight:500;color:var(--ink);display:none;align-items:center;gap:8px;">
+                    <span id="userDisplayName"></span>
+                    <a href="#" id="signOutLink" onclick="doSignOut(); event.preventDefault();" style="font-size:12px;color:var(--muted);text-decoration:underline;">Sign out</a>
+                </span>
+            </div>
             <button class="nav-icon-btn nav-cart-btn" aria-label="Cart" title="Cart">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2">
@@ -2369,6 +2474,25 @@
             </button>
         </div>
     </nav>
+
+    <!-- LOGIN MODAL (FR-43) -->
+    <div id="loginOverlay" class="profile-overlay hidden">
+        <div class="profile-modal" style="max-width:380px;text-align:left;">
+            <h2 style="text-align:center;margin-bottom:4px;">Sign In</h2>
+            <p style="text-align:center;color:var(--muted);margin-bottom:24px;font-size:0.85rem;">Sign in to persist your wardrobe and sync your calendar.</p>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px;">Username</label>
+                <input type="text" id="loginUsername" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.95rem;" placeholder="Username" autocomplete="username">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px;">Password</label>
+                <input type="password" id="loginPassword" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.95rem;" placeholder="Password" autocomplete="current-password">
+            </div>
+            <div id="loginError" style="color:var(--danger);font-size:0.85rem;margin-bottom:12px;display:none;"></div>
+            <button onclick="doLogin()" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:1rem;font-weight:600;cursor:pointer;">Sign In</button>
+            <button onclick="closeLoginModal()" style="width:100%;padding:10px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.85rem;cursor:pointer;margin-top:8px;">Cancel</button>
+        </div>
+    </div>
 
     <!-- AI STYLIST VIEW -->
     <div id="stylistView">
@@ -2481,6 +2605,7 @@
         <div class="results-header">
             <h2 id="resultsLabel" class="results-label">Your Look is Ready</h2>
             <span id="matchCount" class="results-count"></span>
+            <button class="clear-results-btn" onclick="clearAllResults()" title="Clear results">✕ Clear All</button>
         </div>
 
         <div id="outfitBoard" class="outfit-board">
@@ -2503,13 +2628,9 @@
                 <button class="wardrobe-edit-profile" id="editProfileBtn" onclick="openProfileModal()">Edit Profile</button>
             </div>
 
-            <!-- Profile Selector (H9-03) -->
+            <!-- Profile info (FR-43: derived from auth, no manual selector) -->
             <div class="profile-selector" id="profileSelector">
-                <span class="profile-selector-label">👤 Profile:</span>
-                <button class="profile-btn" id="profileBtnJavier" onclick="switchProfile('javier')">Javier</button>
-                <button class="profile-btn" id="profileBtnLaura" onclick="switchProfile('laura')">Laura</button>
-                <button class="profile-btn-guest" id="profileBtnGuest" onclick="switchProfile('guest')">Guest</button>
-                <div class="profile-stats" id="profileStatsBar"></div>
+                <span id="profileStatsBar" class="profile-stats"></span>
             </div>
             <div class="style-dna-chips" id="styleDnaChips"></div>
 
@@ -2521,6 +2642,14 @@
 
             <!-- ① Discover -->
             <div id="tabDiscover" class="wardrobe-tab-content active">
+                <!-- Calendar proactive banner (FR-44) -->
+                <div id="calendarBanner" class="hidden" style="background:rgba(47,109,75,0.06);border:1px solid rgba(47,109,75,0.15);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:1.2rem;">📅</span>
+                    <span id="calendarBannerText" style="flex:1;font-size:0.9rem;"></span>
+                    <button onclick="scrollToCalendarEvents()" style="padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;">Yes, show me</button>
+                    <a href="#" onclick="dismissCalendarBanner(); event.preventDefault();" style="font-size:0.8rem;color:var(--muted);text-decoration:underline;">Dismiss</a>
+                </div>
+
                 <div class="discover-form">
                     <textarea id="discoverOccasion" class="discover-textarea"
                         placeholder="Describe your occasion... e.g. rooftop cocktail party in Barcelona, first date at a wine bar, job interview at a creative agency"></textarea>
@@ -2531,8 +2660,16 @@
                     <p style="margin-top:12px;">Finding the perfect outfit...</p>
                 </div>
                 <div id="discoverResults" class="hidden">
-                    <div id="discoverConcept" class="discover-concept"></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <div id="discoverConcept" class="discover-concept" style="flex:1;"></div>
+                        <button class="clear-results-btn" onclick="clearDiscoverResults()" title="Clear results" style="flex-shrink:0;margin-left:16px;">✕ Clear All</button>
+                    </div>
                     <div id="discoverItemsGrid"></div>
+                </div>
+
+                <!-- Upcoming Events from Calendar (FR-44) -->
+                <div id="calendarSection" style="margin-top:32px;">
+                    <div id="calendarContent"></div>
                 </div>
             </div>
 
@@ -2619,6 +2756,8 @@
         <div id="wishlistItems"></div>
     </aside>
 
+    <script src="/js/auth.js"></script>
+    <script src="/js/calendar.js"></script>
     <script>
         const $ = (id) => document.getElementById(id);
         const dropzone = $("dropzone");
@@ -2659,7 +2798,7 @@
         let idleTimer = null;
         let searchMode = "complementary";
 
-        // --- User Profiles (H9-03) ---
+        // --- User Profiles (H9-03 + FR-43) ---
         const PROFILES = {
             javier: {
                 id: "javier", name: "Javier Lombana", gender: "Men",
@@ -2687,7 +2826,7 @@
                 ]
             },
             laura: {
-                id: "laura", name: "Laura García", gender: "Women",
+                id: "laura", name: "Laura Garcia", gender: "Women",
                 location: "Barcelona, Spain", height: "167 cm", weight: "58 kg",
                 build: "Slim / Pear shape",
                 sizes: { top: "S (EU 36)", trouser: "S / EU 36, Waist 27", shoe: "38 EU / 5 UK", dress: "EU 36 / UK 8" },
@@ -2713,10 +2852,13 @@
             }
         };
 
-        let _activeProfileId = sessionStorage.getItem("active_profile") || "guest";
+        // FR-43: Profile is now determined by Auth state
+        function _getActiveProfileId() {
+            return Auth.getCurrentUser() || "guest";
+        }
 
         function getActiveProfile() {
-            return PROFILES[_activeProfileId] || null;
+            return PROFILES[_getActiveProfileId()] || null;
         }
 
         function getProfileGender() {
@@ -2726,51 +2868,13 @@
             return stored.gender || "Men";
         }
 
-        function switchProfile(profileId) {
-            if (profileId === _activeProfileId) return;
-            const count = getWardrobeBasket().length;
-            if (count > 0) {
-                $("confirmTitle").textContent = "Switch Profile?";
-                const name = PROFILES[profileId]?.name || "Guest";
-                $("confirmMsg").textContent = `Switch to ${name}? Your current wardrobe (${count} items) will be cleared.`;
-                const btn = $("confirmAction");
-                btn.textContent = "Switch";
-                btn.onclick = () => {
-                    _doSwitchProfile(profileId);
-                    $("confirmOverlay").classList.add("hidden");
-                };
-                $("confirmOverlay").classList.remove("hidden");
-            } else {
-                _doSwitchProfile(profileId);
-            }
-        }
-
-        function _doSwitchProfile(profileId) {
-            _activeProfileId = profileId;
-            sessionStorage.setItem("active_profile", profileId);
-            saveWardrobeBasket([]);
-            const p = getActiveProfile();
-            if (p) {
-                sessionStorage.setItem("wardrobe_profile", JSON.stringify({
-                    gender: p.gender,
-                    style_vibe: p.style_tags[0] || "Casual"
-                }));
-            }
-            renderProfileSelector();
-            showWardrobeToast(p ? `Profile: ${p.name}` : "Guest mode");
-        }
-
         function renderProfileSelector() {
-            $("profileBtnJavier").classList.toggle("active", _activeProfileId === "javier");
-            $("profileBtnLaura").classList.toggle("active", _activeProfileId === "laura");
-            $("profileBtnGuest").classList.toggle("active", _activeProfileId === "guest");
-
             const p = getActiveProfile();
             const statsBar = $("profileStatsBar");
             const dnaChips = $("styleDnaChips");
 
             if (p) {
-                statsBar.innerHTML = `${p.height} · ${p.sizes.top} · ${p.build}`;
+                statsBar.innerHTML = `👤 ${p.name} · ${p.height} · ${p.sizes.top} · ${p.build}`;
                 dnaChips.innerHTML = p.style_tags
                     .map(t => `<span class="style-dna-chip">${t}</span>`)
                     .join("") +
@@ -2778,7 +2882,7 @@
                     .map(c => `<span class="style-dna-chip" style="background:rgba(0,0,0,0.05);color:var(--muted);">${c}</span>`)
                     .join("");
             } else {
-                statsBar.innerHTML = "";
+                statsBar.innerHTML = "👤 Guest";
                 dnaChips.innerHTML = "";
             }
         }
@@ -2801,7 +2905,344 @@
             return `The user recently purchased: ${recent.map(h => h.item + " (" + h.brand + ")").join(", ")}. Suggest items that complement their existing wardrobe.`;
         }
 
+        // --- Login / Logout (FR-43) ---
+        function openLoginModal() {
+            $("loginUsername").value = "";
+            $("loginPassword").value = "";
+            $("loginError").style.display = "none";
+            $("loginOverlay").classList.remove("hidden");
+            setTimeout(() => $("loginUsername").focus(), 100);
+        }
+        function closeLoginModal() {
+            $("loginOverlay").classList.add("hidden");
+        }
+        function doLogin() {
+            const user = $("loginUsername").value;
+            const pwd = $("loginPassword").value;
+            const result = Auth.login(user, pwd);
+            if (result.success) {
+                closeLoginModal();
+                // Set active profile in session for wardrobe compatibility
+                sessionStorage.setItem("active_profile", result.user);
+                const p = PROFILES[result.user];
+                if (p) {
+                    sessionStorage.setItem("wardrobe_profile", JSON.stringify({
+                        gender: p.gender,
+                        style_vibe: p.style_tags[0] || "Casual"
+                    }));
+                }
+                // FR-46: Load wardrobe from DB
+                fetch(`/user/${result.user}/wardrobe`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            sessionStorage.setItem(WARDROBE_KEY, JSON.stringify(data.items));
+                            updateWardrobeCount();
+                            updateWardrobeTabCount();
+                        }
+                    })
+                    .catch(() => {});
+                // FR-45: Clear previous results on profile switch
+                clearAllResults();
+                clearDiscoverResults();
+                updateAuthUI();
+                updateWardrobeCount();
+                updateWardrobeTabCount();
+                renderProfileSelector();
+                showWardrobeToast(`Welcome, ${result.name}!`);
+                renderCalendarSection();
+            } else {
+                $("loginError").textContent = result.error;
+                $("loginError").style.display = "block";
+            }
+        }
+        function doSignOut() {
+            // FR-46: Sync wardrobe to DB before logout
+            const user = Auth.getCurrentUser();
+            if (user) {
+                const basket = getWardrobeBasket();
+                fetch(`/user/${user}/wardrobe`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ items: basket })
+                }).catch(() => {});
+            }
+            Auth.logout();
+            Calendar.clearToken();
+            // FR-45: Clear results on sign out
+            clearAllResults();
+            clearDiscoverResults();
+            updateAuthUI();
+            updateWardrobeCount();
+            updateWardrobeTabCount();
+            renderProfileSelector();
+            renderCalendarSection();
+            showWardrobeToast("Signed out");
+        }
+        function updateAuthUI() {
+            if (Auth.isLoggedIn()) {
+                $("signInBtn").style.display = "none";
+                const disp = $("userDisplay");
+                disp.classList.remove("hidden");
+                disp.style.display = "flex";
+                $("userDisplayName").textContent = "👤 " + Auth.getUserDisplayName();
+            } else {
+                $("signInBtn").style.display = "";
+                $("userDisplay").style.display = "none";
+                $("userDisplay").classList.add("hidden");
+            }
+        }
+        // Enter key in login form
+        document.addEventListener("DOMContentLoaded", () => {
+            const pwdField = $("loginPassword");
+            if (pwdField) pwdField.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+            const userField = $("loginUsername");
+            if (userField) userField.addEventListener("keydown", e => { if (e.key === "Enter") $("loginPassword").focus(); });
+        });
+
+        // --- Calendar UI (FR-44) ---
+        let _calendarBannerDismissed = false;
+
+        function renderCalendarSection() {
+            const container = $("calendarContent");
+            if (!container) return;
+
+            if (!Auth.isLoggedIn()) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:24px;color:var(--muted);font-size:0.9rem;border:1px dashed var(--border);border-radius:var(--radius-sm);">
+                        📅 <a href="#" onclick="openLoginModal(); event.preventDefault();" style="color:var(--accent);text-decoration:underline;">Sign in</a> to sync your calendar and get outfit recommendations for upcoming events.
+                    </div>`;
+                $("calendarBanner").classList.add("hidden");
+                return;
+            }
+
+            if (!Calendar.isConnected()) {
+                // FR-49: Auto-load demo events first
+                Calendar.loadDemoEvents().then(() => {
+                    if (Calendar.isConnected()) {
+                        renderCalendarSection(); // re-render with demo events
+                    }
+                });
+                container.innerHTML = `
+                    <h3 style="font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:12px;">📅 Upcoming Events</h3>
+                    <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Loading your calendar...</p>
+                    <div style="display:flex;gap:12px;margin-top:12px;">
+                        <button onclick="Calendar.connectCalendar('google')" style="padding:10px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.88rem;cursor:pointer;font-weight:500;">Connect Google Calendar</button>
+                        <button onclick="Calendar.connectCalendar('outlook')" style="padding:10px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.88rem;cursor:pointer;font-weight:500;">Connect Outlook</button>
+                    </div>`;
+                $("calendarBanner").classList.add("hidden");
+                return;
+            }
+
+            // Calendar is connected — render events
+            const events = Calendar.getEvents();
+            if (events.length === 0) {
+                container.innerHTML = `
+                    <h3 style="font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:12px;">📅 Upcoming Events</h3>
+                    <p style="color:var(--muted);font-size:0.88rem;">No upcoming events in the next 30 days.</p>`;
+                return;
+            }
+
+            const demoLabel = Calendar.isDemoMode() ? ' <span style="font-size:0.75rem;background:rgba(47,109,75,0.1);color:var(--accent);padding:2px 8px;border-radius:999px;margin-left:8px;">Demo</span>' : "";
+            let html = `<h3 style="font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:16px;">📅 Upcoming Events (${events.length})${demoLabel}</h3>`;
+            for (const evt of events) {
+                const dateStr = evt.date ? new Date(evt.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "";
+                const editBtn = evt.editable ? `<button onclick="openEditEventModal('${evt.id}')" style="padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.78rem;cursor:pointer;color:var(--muted);" title="Edit event">Edit</button>` : "";
+                html += `
+                    <div class="calendar-event-card" id="evt-${evt.id}" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:var(--surface);">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.8rem;color:var(--muted);">${dateStr}${evt.time ? " · " + evt.time : ""}</span>
+                                <div style="font-weight:600;font-size:0.95rem;margin-top:2px;">${evt.title}</div>
+                                ${evt.location ? `<span style="font-size:0.8rem;color:var(--muted);">${evt.location}</span>` : ""}
+                                ${evt.occasion_hint ? `<div style="font-size:0.78rem;color:var(--accent);margin-top:4px;font-style:italic;">${evt.occasion_hint}</div>` : ""}
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                ${editBtn}
+                                <button onclick="addEventToWardrobeSearch('${evt.id}')" style="padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.78rem;cursor:pointer;color:var(--accent);font-weight:500;" title="Use as Discover search">Search</button>
+                                <button onclick="getOutfitForCalendarEvent('${evt.id}')" style="padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">Get Outfit Ideas</button>
+                            </div>
+                        </div>
+                        <div id="evt-results-${evt.id}"></div>
+                    </div>`;
+            }
+            container.innerHTML = html;
+
+            // Proactive banner
+            const upcoming14 = Calendar.getUpcomingEvents(14);
+            if (upcoming14.length > 0 && !_calendarBannerDismissed) {
+                $("calendarBannerText").textContent = `You have ${upcoming14.length} upcoming event${upcoming14.length > 1 ? "s" : ""} in the next 2 weeks. Want outfit recommendations?`;
+                $("calendarBanner").classList.remove("hidden");
+                $("calendarBanner").style.display = "flex";
+            }
+        }
+
+        function dismissCalendarBanner() {
+            _calendarBannerDismissed = true;
+            $("calendarBanner").classList.add("hidden");
+            $("calendarBanner").style.display = "none";
+        }
+
+        function scrollToCalendarEvents() {
+            dismissCalendarBanner();
+            const section = $("calendarSection");
+            if (section) section.scrollIntoView({ behavior: "smooth" });
+            // Auto-expand first event
+            const events = Calendar.getEvents();
+            if (events.length > 0) {
+                setTimeout(() => getOutfitForCalendarEvent(events[0].id), 500);
+            }
+        }
+
+        async function getOutfitForCalendarEvent(eventId) {
+            const events = Calendar.getEvents();
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+
+            const resultsDiv = $(`evt-results-${eventId}`);
+            if (!resultsDiv) return;
+
+            resultsDiv.innerHTML = `<div style="padding:16px;text-align:center;"><div class="spinner"></div><p style="margin-top:8px;color:var(--muted);font-size:0.85rem;">Finding outfit ideas...</p></div>`;
+
+            try {
+                const data = await Calendar.getOutfitForEvent(evt);
+                let html = "";
+                if (data.outfit_concept) {
+                    html += `<div style="margin-top:12px;padding:12px 16px;background:var(--accent-light);border-radius:var(--radius-sm);font-size:0.88rem;line-height:1.5;">${data.outfit_concept}</div>`;
+                }
+                if (data.items && data.items.length > 0) {
+                    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px;">`;
+                    for (const item of data.items) {
+                        const inBasket = getWardrobeBasket().some(b => String(b.id) === String(item.id));
+                        const btnClass = inBasket ? " in-wardrobe" : "";
+                        const btnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+                        html += `
+                            <div class="discover-card" style="font-size:0.85rem;">
+                                ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--radius-sm) var(--radius-sm) 0 0;">` : `<div style="aspect-ratio:3/4;background:var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--muted);border-radius:var(--radius-sm) var(--radius-sm) 0 0;">No image</div>`}
+                                <div style="padding:10px;">
+                                    <div style="font-weight:600;font-size:0.82rem;">${item.name}</div>
+                                    <div style="font-size:0.75rem;color:var(--muted);">${item.articleType || ""} · ${item.baseColour || ""}</div>
+                                    <button class="add-to-wardrobe-btn${btnClass}" onclick="toggleCalendarEventItem(this, ${JSON.stringify(item).replace(/"/g, '&quot;')}, 'calendar')" type="button" style="margin-top:8px;font-size:0.78rem;">${btnLabel}</button>
+                                </div>
+                            </div>`;
+                    }
+                    html += `</div>`;
+                } else {
+                    html += `<p style="margin-top:12px;color:var(--muted);font-size:0.85rem;">No matching items found. Try refining via manual Discover.</p>`;
+                }
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                resultsDiv.innerHTML = `<p style="margin-top:12px;color:var(--danger);font-size:0.85rem;">${err.message}</p>`;
+            }
+        }
+
+        function toggleCalendarEventItem(btn, item, source) {
+            const wardrobeItem = {
+                id: item.id,
+                name: item.name,
+                articleType: item.articleType || "",
+                baseColour: item.baseColour || "",
+                image_url: item.image_url || "",
+                source: source || "calendar"
+            };
+            const added = toggleWardrobeItem(wardrobeItem);
+            if (added) {
+                btn.classList.add("in-wardrobe");
+                btn.textContent = "✓ In Wardrobe";
+            } else {
+                btn.classList.remove("in-wardrobe");
+                btn.textContent = "+ Add to Wardrobe";
+            }
+        }
+
+        // --- FR-45: Clear All & Dismiss ---
+        function clearAllResults() {
+            $("resultsSection").classList.add("hidden");
+            $("matchesGrid").innerHTML = "";
+        }
+        function clearDiscoverResults() {
+            $("discoverResults").classList.add("hidden");
+            $("discoverItemsGrid").innerHTML = "";
+            $("discoverConcept").textContent = "";
+        }
+        function dismissMatchCard(btn) {
+            const card = btn.closest(".match-card");
+            if (card) {
+                card.style.transition = "opacity 0.3s, transform 0.3s";
+                card.style.opacity = "0";
+                card.style.transform = "scale(0.9)";
+                setTimeout(() => card.remove(), 300);
+            }
+        }
+        function dismissDiscoverCard(btn) {
+            const card = btn.closest(".discover-card");
+            if (card) {
+                card.style.transition = "opacity 0.3s, transform 0.3s";
+                card.style.opacity = "0";
+                card.style.transform = "scale(0.9)";
+                setTimeout(() => card.remove(), 300);
+            }
+        }
+
+        // --- FR-49: Edit Event Modal ---
+        function openEditEventModal(eventId) {
+            const events = Calendar.getEvents();
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+            const overlay = document.createElement("div");
+            overlay.className = "edit-event-overlay";
+            overlay.id = "editEventOverlay";
+            overlay.innerHTML = `
+                <div class="edit-event-modal">
+                    <h3>Edit Event</h3>
+                    <label>Event Title</label>
+                    <input type="text" id="editEvtTitle" value="${(evt.title || '').replace(/"/g, '&quot;')}">
+                    <label>Date</label>
+                    <input type="date" id="editEvtDate" value="${evt.date || ''}">
+                    <label>Time</label>
+                    <input type="time" id="editEvtTime" value="${evt.time || ''}">
+                    <label>Location</label>
+                    <input type="text" id="editEvtLocation" value="${(evt.location || '').replace(/"/g, '&quot;')}">
+                    <label>Occasion Hint</label>
+                    <textarea id="editEvtHint" rows="2" style="resize:vertical;">${evt.occasion_hint || ''}</textarea>
+                    <div class="modal-actions">
+                        <button onclick="closeEditEventModal()" style="padding:8px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;cursor:pointer;">Cancel</button>
+                        <button onclick="saveEditEvent('${eventId}')" style="padding:8px 20px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-weight:600;cursor:pointer;">Save</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+        }
+        function closeEditEventModal() {
+            const o = $("editEventOverlay");
+            if (o) o.remove();
+        }
+        function saveEditEvent(eventId) {
+            Calendar.updateEvent(eventId, {
+                title: $("editEvtTitle").value,
+                date: $("editEvtDate").value,
+                time: $("editEvtTime").value,
+                location: $("editEvtLocation").value,
+                occasion_hint: $("editEvtHint").value
+            });
+            closeEditEventModal();
+            renderCalendarSection();
+            showWardrobeToast("Event updated");
+        }
+        function addEventToWardrobeSearch(eventId) {
+            const events = Calendar.getEvents();
+            const evt = events.find(e => e.id === eventId);
+            if (!evt) return;
+            // Switch to Discover tab and pre-fill occasion
+            setWardrobeTab("discover");
+            const textarea = $("discoverOccasion");
+            if (textarea) {
+                textarea.value = evt.occasion_hint || evt.title;
+                textarea.focus();
+            }
+        }
+
         // --- Wardrobe Basket (shared between AI Stylist & AI Wardrobe) ---
+        // FR-43: Guest uses sessionStorage, logged-in users persist to localStorage
         const WARDROBE_KEY = "wardrobe_basket";
 
         function getWardrobeBasket() {
@@ -2809,7 +3250,19 @@
             catch { return []; }
         }
         function saveWardrobeBasket(basket) {
-            sessionStorage.setItem(WARDROBE_KEY, JSON.stringify(basket));
+            const json = JSON.stringify(basket);
+            sessionStorage.setItem(WARDROBE_KEY, json);
+            // FR-43: persist for logged-in users (localStorage)
+            Auth.persistWardrobe(json);
+            // FR-46: persist to SQLite DB
+            const user = Auth.getCurrentUser();
+            if (user) {
+                fetch(`/user/${user}/wardrobe`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ items: basket })
+                }).catch(() => {});
+            }
             updateWardrobeCount();
             updateWardrobeTabCount();
         }
@@ -2854,11 +3307,12 @@
             document.querySelector(".nav-link-gptoutfit").classList.remove("active");
             $("navWardrobe").classList.add("active");
             renderProfileSelector();
-            // Show entry survey for guest users on first visit (skip for Javier/Laura)
-            if (_activeProfileId === "guest" && !sessionStorage.getItem("survey_completed")) {
+            // FR-43: Show entry survey for guest users on first visit (skip for logged-in)
+            if (!Auth.isLoggedIn() && !sessionStorage.getItem("survey_completed")) {
                 openProfileModal();
             }
             updateWardrobeTabCount();
+            renderCalendarSection();
         }
         function showStylist() {
             $("wardrobeView").classList.add("hidden");
@@ -3031,6 +3485,7 @@
                     const btnClass = inBasket ? " in-wardrobe" : "";
                     const btnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
                     card.innerHTML = `
+                        <button class="discover-card-dismiss" onclick="dismissDiscoverCard(this)" title="Dismiss">✕</button>
                         ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">` : `<div style="aspect-ratio:3/4;background:var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--muted);">No image</div>`}
                         <div class="discover-card-body">
                             <div class="discover-card-name">${item.name}</div>
@@ -3395,6 +3850,7 @@
             const wardrobeBtnHtml = `<button class="add-to-wardrobe-btn${wardrobeBtnClass}" type="button">${wardrobeBtnLabel}</button>`;
 
             card.innerHTML = `
+                <button class="match-card-dismiss" onclick="dismissMatchCard(this)" title="Dismiss">✕</button>
                 ${inventoryHtml}
                 ${imgHtml}
                 <div class="match-card-body">
@@ -3655,6 +4111,7 @@
                     const btnClass = inBasket ? " in-wardrobe" : "";
                     const btnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
                     card.innerHTML = `
+                        <button class="discover-card-dismiss" onclick="dismissDiscoverCard(this)" title="Dismiss">✕</button>
                         ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">` : `<div style="aspect-ratio:3/4;background:var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--muted);">No image</div>`}
                         <div class="discover-card-body">
                             <div class="discover-card-name">${item.name}</div>
@@ -4521,6 +4978,12 @@
         wishlist = loadWishlist();
         updateWishlistUI();
         updateWardrobeCount();
+
+        // FR-43 + FR-44: Initialize auth UI and handle calendar callback
+        updateAuthUI();
+        Calendar.handleCallback().then(() => {
+            renderCalendarSection();
+        });
     </script>
 
     <footer class="site-footer">

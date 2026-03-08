@@ -23,6 +23,20 @@ class Settings(BaseSettings):
     host: str = Field(default="0.0.0.0", alias="HOST")
     port: int = Field(default=8000, alias="PORT")
 
+    # Calendar OAuth (FR-44)
+    google_client_id: str = Field(default="", alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str = Field(default="", alias="GOOGLE_CLIENT_SECRET")
+    google_redirect_uri: str = Field(
+        default="http://localhost:8000/wardrobe/calendar/auth/google/callback",
+        alias="GOOGLE_REDIRECT_URI",
+    )
+    microsoft_client_id: str = Field(default="", alias="MICROSOFT_CLIENT_ID")
+    microsoft_client_secret: str = Field(default="", alias="MICROSOFT_CLIENT_SECRET")
+    microsoft_redirect_uri: str = Field(
+        default="http://localhost:8000/wardrobe/calendar/auth/outlook/callback",
+        alias="MICROSOFT_REDIRECT_URI",
+    )
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

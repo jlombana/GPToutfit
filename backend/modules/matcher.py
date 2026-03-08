@@ -327,7 +327,20 @@ def find_matches(
                 search_mode.upper(), effective_threshold, threshold,
                 float(scores.max()) if len(scores) > 0 else 0, len(candidates))
 
-    above = scores >= effective_threshold
+    # FR-48: Adaptive threshold — drop in 0.05 steps until min 6 results or 0.10 floor
+    MIN_RESULTS = 6
+    FLOOR_THRESHOLD = 0.10
+    STEP = 0.05
+    current_threshold = effective_threshold
+    above = scores >= current_threshold
+    while int(above.sum()) < MIN_RESULTS and current_threshold > FLOOR_THRESHOLD:
+        current_threshold -= STEP
+        if current_threshold < FLOOR_THRESHOLD:
+            current_threshold = FLOOR_THRESHOLD
+        above = scores >= current_threshold
+        logger.info("[%s] Adaptive threshold lowered to %.3f → %d results",
+                    search_mode.upper(), current_threshold, int(above.sum()))
+
     if not above.any():
         return []
 

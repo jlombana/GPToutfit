@@ -397,21 +397,28 @@ async def tryon_generative(req: TryOnGenerativeRequest) -> dict:
                 match = _re.search(r'"description"\s*:\s*"([^"]+)"', raw)
                 description = match.group(1) if match else raw.strip()
 
-        # If no photo (model mode), build generic description from gender
+        # If no photo (model mode), build richer description from gender
         if not description:
             gender_desc = "male" if req.gender.lower() in ("men", "male") else "female"
-            description = f"A stylish {gender_desc} fashion model with a fit build and confident posture"
+            description = (
+                f"A confident {gender_desc} fashion model in their late 20s, "
+                f"athletic build, natural skin tone, standing in a relaxed but poised pose"
+            )
 
-        # Step 2: Build DALL-E 3 prompt
+        # Step 2: Build DALL-E 3 prompt — anchor description twice for consistency
         item_list_str = ", ".join(
             f"{it.baseColour} {it.productDisplayName or it.name}".strip()
             for it in req.basket_items[:5]
         )
         style = req.style_vibe or "contemporary"
         dalle_prompt = (
-            f"Fashion editorial photograph of {description} wearing {item_list_str}. "
-            f"Full body shot, natural lighting, white studio background, high resolution, "
-            f"realistic fabric texture, {style} editorial style."
+            f"Fashion editorial photograph: {description}. "
+            f"The person is wearing the following outfit: {item_list_str}. "
+            f"Full body shot from head to shoes, centered in frame, "
+            f"natural studio lighting, clean white background, "
+            f"realistic fabric textures and draping. "
+            f"The {description.split(',')[0].strip()} looks confident and editorial. "
+            f"Style: {style}. High resolution, 4K detail."
         )
 
         # Step 3: DALL-E 3 generation

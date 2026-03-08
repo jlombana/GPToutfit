@@ -31,3 +31,4 @@ Thumbs.db
 
 # Planning (local only)
 .planning/
+data/user_data.db
