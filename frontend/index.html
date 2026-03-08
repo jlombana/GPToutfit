@@ -4571,16 +4571,24 @@
 
             // Animate phases
             const phaseEl = $("genPhaseText");
-            setTimeout(() => { if (phaseEl) phaseEl.textContent = "Building your outfit..."; }, 5000);
-            setTimeout(() => { if (phaseEl) phaseEl.textContent = "Generating your look..."; }, 12000);
+            if (personBase64) {
+                // Photo mode — gpt-image-1
+                phaseEl.textContent = "Preparing your photo...";
+                setTimeout(() => { if (phaseEl) phaseEl.textContent = "Dressing you in the outfit..."; }, 5000);
+                setTimeout(() => { if (phaseEl) phaseEl.textContent = "Generating your look..."; }, 15000);
+            } else {
+                // Model mode — DALL-E 3
+                setTimeout(() => { if (phaseEl) phaseEl.textContent = "Building your outfit..."; }, 5000);
+                setTimeout(() => { if (phaseEl) phaseEl.textContent = "Generating your look..."; }, 12000);
+            }
 
             // Disable button
             const btn = container.parentElement?.querySelector(".tryon-gen-btn");
             if (btn) btn.disabled = true;
 
-            // Timeout controller (30s)
+            // Timeout controller (60s — gpt-image-1 can take longer)
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 30000);
+            const timeout = setTimeout(() => controller.abort(), 60000);
 
             fetch("/wardrobe/tryon-generative", {
                 method: "POST",
@@ -4608,10 +4616,13 @@
                     }));
                 }
 
+                const modelLabel = data.model_used === "gpt-image-1"
+                    ? "Generated with gpt-image-1 (your photo preserved)"
+                    : "Generated with DALL-E 3 (AI model)";
                 container.innerHTML = `
                     <div class="tryon-gen-result">
                         <img src="${data.generated_image_url}" alt="AI Generated Try-On">
-                        <div class="tryon-gen-disclaimer">AI-generated preview · Not a real photograph</div>
+                        <div class="tryon-gen-disclaimer">AI-generated preview · ${modelLabel}</div>
                         <br>
                         <button class="tryon-regen-btn" onclick="startGenerativeTryOn()">↻ Regenerate</button>
                     </div>

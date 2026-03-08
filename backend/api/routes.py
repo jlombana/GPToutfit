@@ -345,103 +345,109 @@ async def keyword_search(req: KeywordSearchRequest) -> dict:
 
 @router.post("/wardrobe/tryon-generative")
 async def tryon_generative(req: TryOnGenerativeRequest) -> dict:
-    """Generative Try-On via GPT-4o + DALL-E 3 (FR-42).
+    """Generative Try-On via gpt-image-1 (with photo) or DALL-E 3 (model mode).
 
-    Step 1: GPT-4o vision analyzes user photo → description.
-    Step 2: Build DALL-E 3 prompt from description + basket items.
-    Step 3: DALL-E 3 generates editorial image.
+    With photo: uses images.edit + gpt-image-1 to dress the REAL person.
+    Without photo: uses images.generate + dall-e-3 to create editorial image.
     Never persists person_image_base64 to disk or logs.
     """
-    import json as _json
-    import re as _re
+    import io as _io
 
     if not req.basket_items:
         raise HTTPException(status_code=400, detail="At least one basket item is required")
 
     try:
         client = AsyncOpenAI(api_key=settings.openai_api_key)
-        description = req.cached_description
 
-        # Step 1: GPT-4o Vision — analyze person photo (skip if cached or model mode)
-        if not description and req.person_image_base64:
-            async def _analyze_photo() -> str:
-                response = await client.responses.create(
-                    model="gpt-4o",
-                    input=[{
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "input_text",
-                                "text": (
-                                    "You are a fashion photographer assistant. Analyze the person "
-                                    "in this photo and describe them in 2-3 sentences covering: "
-                                    "apparent body type, skin tone, hair color and length, "
-                                    "approximate age range. Be factual and neutral. "
-                                    'Output JSON only: {"description": "..."}'
-                                ),
-                            },
-                            {
-                                "type": "input_image",
-                                "image_url": f"data:image/jpeg;base64,{req.person_image_base64}",
-                            },
-                        ],
-                    }],
+        # Build outfit description from basket items
+        item_list_str = ", ".join(
+            f"{it.baseColour} {it.productDisplayName or it.name}".strip()
+            for it in req.basket_items[:5]
+        )
+        style = req.style_vibe or "contemporary"
+        has_photo = bool(req.person_image_base64)
+
+        if has_photo:
+            # --- PATH A: gpt-image-1 with real photo (preserves the person) ---
+            edit_prompt = (
+                f"Keep this exact person — same face, body, skin tone, hair. "
+                f"Dress them in the following outfit: {item_list_str}. "
+                f"Full body shot from head to shoes, centered in frame, "
+                f"natural studio lighting, clean white background, "
+                f"realistic fabric textures and draping. "
+                f"Style: {style} editorial fashion photography. High resolution."
+            )
+
+            # Decode base64 to bytes for the images.edit endpoint
+            photo_bytes = base64.b64decode(req.person_image_base64)
+            photo_file = _io.BytesIO(photo_bytes)
+            photo_file.name = "person.png"
+
+            async def _edit_image() -> str:
+                response = await client.images.edit(
+                    model="gpt-image-1",
+                    image=photo_file,
+                    prompt=edit_prompt,
+                    size="1024x1536",
+                    n=1,
                 )
-                return response.output_text or ""
+                item = response.data[0]
+                if item.url:
+                    return item.url
+                elif item.b64_json:
+                    return f"data:image/png;base64,{item.b64_json}"
+                return ""
 
-            raw = await call_openai_with_retry(_analyze_photo)
-            try:
-                parsed = _json.loads(raw.strip())
-                description = parsed.get("description", raw)
-            except _json.JSONDecodeError:
-                match = _re.search(r'"description"\s*:\s*"([^"]+)"', raw)
-                description = match.group(1) if match else raw.strip()
+            generated_url = await call_openai_with_retry(_edit_image)
 
-        # If no photo (model mode), build richer description from gender
-        if not description:
+            logger.info("[TRYON-GEN] mode=photo model=gpt-image-1 items=%d",
+                        len(req.basket_items))
+
+            return {
+                "generated_image_url": generated_url,
+                "prompt_used": edit_prompt,
+                "description": "Photo-based try-on (real person preserved)",
+                "model_used": "gpt-image-1",
+            }
+
+        else:
+            # --- PATH B: DALL-E 3 for model mode (no photo provided) ---
             gender_desc = "male" if req.gender.lower() in ("men", "male") else "female"
             description = (
                 f"A confident {gender_desc} fashion model in their late 20s, "
                 f"athletic build, natural skin tone, standing in a relaxed but poised pose"
             )
 
-        # Step 2: Build DALL-E 3 prompt — anchor description twice for consistency
-        item_list_str = ", ".join(
-            f"{it.baseColour} {it.productDisplayName or it.name}".strip()
-            for it in req.basket_items[:5]
-        )
-        style = req.style_vibe or "contemporary"
-        dalle_prompt = (
-            f"Fashion editorial photograph: {description}. "
-            f"The person is wearing the following outfit: {item_list_str}. "
-            f"Full body shot from head to shoes, centered in frame, "
-            f"natural studio lighting, clean white background, "
-            f"realistic fabric textures and draping. "
-            f"The {description.split(',')[0].strip()} looks confident and editorial. "
-            f"Style: {style}. High resolution, 4K detail."
-        )
-
-        # Step 3: DALL-E 3 generation
-        async def _generate_image() -> str:
-            response = await client.images.generate(
-                model="dall-e-3",
-                prompt=dalle_prompt,
-                size="1024x1792",
-                quality="standard",
-                n=1,
+            dalle_prompt = (
+                f"Fashion editorial photograph: {description}. "
+                f"The person is wearing the following outfit: {item_list_str}. "
+                f"Full body shot from head to shoes, centered in frame, "
+                f"natural studio lighting, clean white background, "
+                f"realistic fabric textures and draping. "
+                f"Style: {style}. High resolution, 4K detail."
             )
-            return response.data[0].url
 
-        generated_url = await call_openai_with_retry(_generate_image)
+            async def _generate_image() -> str:
+                response = await client.images.generate(
+                    model="dall-e-3",
+                    prompt=dalle_prompt,
+                    size="1024x1792",
+                    quality="standard",
+                    n=1,
+                )
+                return response.data[0].url
 
-        logger.info("[TRYON-GEN] gender=%s items=%d prompt_len=%d",
-                    req.gender, len(req.basket_items), len(dalle_prompt))
+            generated_url = await call_openai_with_retry(_generate_image)
 
-        return {
-            "generated_image_url": generated_url,
-            "prompt_used": dalle_prompt,
-            "description": description,
-        }
+            logger.info("[TRYON-GEN] mode=model model=dall-e-3 items=%d",
+                        len(req.basket_items))
+
+            return {
+                "generated_image_url": generated_url,
+                "prompt_used": dalle_prompt,
+                "description": description,
+                "model_used": "dall-e-3",
+            }
 
     except HTTPException:
         raise
