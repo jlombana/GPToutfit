@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data artifacts
+data/embeddings_cache.csv
+data/embeddings_cache.pkl
+*.npy
+
+# Large files (product images ~41GB, pre-computed embeddings)
+sample_clothes/sample_images_large/
+sample_clothes/sample_styles_with_embeddings.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Planning (local only)
+.planning/

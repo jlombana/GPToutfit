@@ -1,0 +1,4544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailNext — AI Stylist powered by GPToutfit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f1ea;
+            --surface: #ffffff;
+            --ink: #1a1a1a;
+            --muted: #6b6b6b;
+            --subtle: #999;
+            --accent: #2f6d4b;
+            --accent-hover: #245a3c;
+            --accent-light: rgba(47, 109, 75, 0.08);
+            --danger: #c0392b;
+            --border: #e8e4dd;
+            --border-light: #f0ece5;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+            --transition: 0.2s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            font-family: "Outfit", system-ui, sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- PROMO BAR --- */
+        .promo-bar {
+            background-color: #1a1a1a;
+            color: #f5f5f5;
+            text-align: center;
+            padding: 8px 20px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+        .promo-link {
+            color: #f5f5f5;
+            text-decoration: underline;
+            margin-left: 4px;
+        }
+
+        /* --- NAV PRINCIPAL --- */
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e8e2d9;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* MARCA RETAILNEXT */
+        .nav-brand-retailnext {
+            text-decoration: none;
+        }
+        .brand-name {
+            font-family: 'Georgia', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: 0.02em;
+        }
+
+        /* NAV LINKS */
+        .nav-links {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 32px;
+            align-items: center;
+        }
+        .nav-link {
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: #444;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 4px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            color: #1a1a1a;
+            border-bottom-color: #1a1a1a;
+        }
+
+        /* AI Stylist — destacado especial */
+        .nav-link-gptoutfit {
+            color: #2d5a3d;
+            font-weight: 700;
+        }
+        .nav-link-gptoutfit:hover,
+        .nav-link-gptoutfit.active {
+            color: #2d5a3d;
+            border-bottom-color: #2d5a3d;
+        }
+
+        /* AI Wardrobe — destacado especial */
+        .nav-link-wardrobe {
+            color: #2d5a3d;
+            font-weight: 700;
+        }
+        .nav-link-wardrobe:hover,
+        .nav-link-wardrobe.active {
+            color: #2d5a3d;
+            border-bottom-color: #2d5a3d;
+        }
+        .wardrobe-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-left: 2px;
+        }
+        /* Add to Wardrobe button (shared card component) */
+        .add-to-wardrobe-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 10px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--accent);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-to-wardrobe-btn:hover {
+            background: var(--accent-light);
+        }
+        .add-to-wardrobe-btn.in-wardrobe {
+            background: var(--border-light);
+            border-color: var(--border);
+            color: var(--muted);
+        }
+        .add-to-wardrobe-btn.in-wardrobe:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(192,57,43,0.06);
+        }
+
+        /* Toast notification */
+        .wardrobe-toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--ink);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 999px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .wardrobe-toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Source chip (From Stylist / From Discover) */
+        .source-chip {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-top: 6px;
+        }
+        .source-chip.from-stylist {
+            background: rgba(200,170,100,0.15);
+            color: #8a6d3b;
+        }
+        .source-chip.from-discover {
+            background: rgba(70,140,180,0.12);
+            color: #2d6a8a;
+        }
+        .source-chip.from-search {
+            background: rgba(100,70,160,0.12);
+            color: #5b3a9a;
+        }
+
+        /* Outfit Completeness Bar (H9-01) */
+        .completeness-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        .completeness-header {
+            font-family: "Fraunces", serif;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .completeness-tier {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .completeness-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .completeness-cat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .completeness-cat.filled {
+            border-color: #2D7A2D;
+            background: rgba(45,122,45,0.08);
+            color: #2D7A2D;
+        }
+        .completeness-cat.missing {
+            border-color: var(--danger);
+            background: rgba(192,57,43,0.06);
+            color: var(--danger);
+        }
+        .completeness-progress {
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .completeness-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .completeness-progress-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .completeness-cta {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .completeness-cta:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Contextual prompt banner (H9-04-D) */
+        .contextual-prompt {
+            background: rgba(47,109,75,0.06);
+            border: 1px solid rgba(47,109,75,0.15);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .contextual-prompt-text { flex: 1; }
+        .contextual-prompt-options { display: flex; gap: 8px; }
+        .contextual-prompt-options button {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .contextual-prompt-options button:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .contextual-prompt-dismiss {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--muted);
+            padding: 0 4px;
+        }
+
+        /* Post-companion feedback (H9-04-E) */
+        .companion-feedback {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+        }
+        .companion-feedback-q {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .companion-feedback-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .companion-feedback-stars button {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .companion-feedback-stars button:hover,
+        .companion-feedback-stars button.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .companion-followup {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .companion-followup button {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .companion-followup button:hover {
+            border-color: var(--accent);
+        }
+
+        /* Sale — en rojo */
+        .nav-link-sale {
+            color: #c0392b;
+        }
+        .nav-link-sale:hover {
+            color: #c0392b;
+            border-bottom-color: #c0392b;
+        }
+
+        /* ICONOS DE UTILIDAD */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #444;
+            padding: 4px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .nav-icon-btn:hover {
+            color: #1a1a1a;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #1a1a1a;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .associate-badge {
+            display: inline-block;
+            background: var(--ink);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 999px;
+        }
+
+        /* --- AI WARDROBE --- */
+        .wardrobe-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 40px 80px;
+        }
+        .wardrobe-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .wardrobe-header h1 {
+            font-family: "Fraunces", serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .wardrobe-edit-profile {
+            font-size: 0.85rem;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+        .wardrobe-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 32px;
+        }
+        .wardrobe-tab {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .wardrobe-tab:hover {
+            color: var(--ink);
+        }
+        .wardrobe-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .wardrobe-tab-content {
+            display: none;
+        }
+        .wardrobe-tab-content.active {
+            display: block;
+        }
+
+        /* Profile Modal */
+        .profile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .profile-modal h2 {
+            font-family: "Fraunces", serif;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        .profile-modal p {
+            color: var(--muted);
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+        .profile-gender-grid {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .profile-gender-btn {
+            flex: 1;
+            max-width: 120px;
+            padding: 20px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .profile-gender-btn .gender-icon {
+            font-size: 2rem;
+        }
+        .profile-gender-btn:hover {
+            border-color: var(--accent);
+        }
+        .profile-gender-btn.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .profile-vibe-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+        .profile-vibe-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .profile-vibe-btn:hover {
+            border-color: var(--accent);
+        }
+        .profile-vibe-btn.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .profile-confirm-btn {
+            padding: 12px 40px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .profile-confirm-btn:hover {
+            background: var(--accent-hover);
+        }
+        .profile-confirm-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .survey-skip-link {
+            display: block;
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .survey-skip-link:hover {
+            color: var(--ink);
+        }
+
+        /* Keyword Search (H9-02) */
+        .keyword-search-panel {
+            margin-top: 16px;
+        }
+        .keyword-search-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .keyword-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            background: var(--surface);
+        }
+        .keyword-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .keyword-search-btn {
+            white-space: nowrap;
+            min-width: 100px;
+        }
+        .keyword-gender-filter {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .keyword-gender-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .keyword-gender-btn:hover {
+            border-color: var(--accent);
+        }
+        .keyword-gender-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .keyword-results-section {
+            margin-top: 20px;
+        }
+        .keyword-results-header {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .keyword-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* Discover section */
+        .discover-form {
+            max-width: 600px;
+            margin: 0 auto 32px;
+            text-align: center;
+        }
+        .discover-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .discover-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .discover-btn {
+            margin-top: 16px;
+            padding: 14px 40px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .discover-btn:hover {
+            background: var(--accent-hover);
+        }
+        .discover-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .discover-concept {
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--muted);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 28px;
+            line-height: 1.6;
+        }
+        .discover-category-header {
+            font-family: "Fraunces", serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 28px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .discover-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .discover-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .discover-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .discover-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background: var(--border-light);
+        }
+        .discover-card-body {
+            padding: 12px;
+        }
+        .discover-card-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .discover-card-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .discover-spinner {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+
+        /* My Wardrobe board */
+        .my-wardrobe-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+        .my-wardrobe-empty h3 {
+            font-family: "Fraunces", serif;
+            margin-bottom: 8px;
+        }
+        .my-wardrobe-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: var(--accent-light);
+            border-radius: var(--radius-sm);
+        }
+        .my-wardrobe-total {
+            font-family: "Fraunces", serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .my-wardrobe-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .my-wardrobe-actions button {
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-shop-all {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+        .btn-shop-all:hover {
+            background: var(--accent-hover);
+        }
+        .btn-try-on {
+            background: white;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+        .btn-try-on:hover {
+            background: var(--accent-light);
+        }
+        .my-wardrobe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .my-wardrobe-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+        }
+        .my-wardrobe-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background: var(--border-light);
+        }
+        .my-wardrobe-card-body {
+            padding: 10px;
+        }
+        .my-wardrobe-card-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .my-wardrobe-card-price {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .my-wardrobe-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .my-wardrobe-remove:hover {
+            background: var(--danger);
+        }
+
+        /* Manage mode header */
+        .my-wardrobe-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-manage {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-manage:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-manage.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-remove-selected {
+            padding: 8px 16px;
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--danger);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-remove-selected:hover { background: var(--danger); color: #fff; }
+        .btn-clear-all {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .btn-clear-all:hover { opacity: 0.7; }
+
+        /* Manage mode card checkbox */
+        .manage-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            transition: all 0.2s;
+        }
+        .manage-mode .manage-checkbox { display: flex; }
+        .manage-checkbox.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .manage-checkbox svg {
+            width: 14px; height: 14px;
+            stroke: white; fill: none; stroke-width: 2.5;
+            opacity: 0;
+        }
+        .manage-checkbox.checked svg { opacity: 1; }
+
+        /* Confirm modal */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .confirm-modal h3 {
+            font-family: "Fraunces", serif;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .confirm-modal p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+        .confirm-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .confirm-modal-actions button {
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-confirm-cancel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .btn-confirm-danger {
+            background: var(--danger);
+            border: none;
+            color: #fff;
+        }
+        .btn-confirm-danger:hover { opacity: 0.85; }
+
+        /* Card reflow animation */
+        .my-wardrobe-card {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* Try It On — Category Picker (H8-04) */
+        .tryon-picker-title {
+            font-family: "Fraunces", serif;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .tryon-category-row {
+            margin-bottom: 20px;
+        }
+        .tryon-category-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .tryon-thumb-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tryon-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .tryon-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .tryon-thumb:hover {
+            border-color: var(--accent);
+        }
+        .tryon-thumb.selected {
+            border-color: #c0982d;
+            box-shadow: 0 0 0 2px rgba(192,152,45,0.3);
+        }
+        .tryon-thumb-check {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #c0982d;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .tryon-thumb.selected .tryon-thumb-check {
+            display: flex;
+        }
+        .tryon-thumb-check svg {
+            width: 12px; height: 12px;
+            stroke: white; fill: none; stroke-width: 2.5;
+        }
+        .tryon-try-btn {
+            display: block;
+            margin: 24px auto 0;
+            padding: 14px 40px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tryon-try-btn:hover { background: var(--accent-hover); }
+        .tryon-try-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .tryon-loading {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Original Try It On styles */
+        .tryon-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        .tryon-option-card {
+            flex: 1;
+            padding: 32px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface);
+        }
+        .tryon-option-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+        .tryon-option-card .tryon-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .tryon-option-card h3 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .tryon-option-card p {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .tryon-composite {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .tryon-model-container {
+            position: relative;
+            display: inline-block;
+            max-width: 400px;
+            width: 100%;
+        }
+        .tryon-model-img {
+            width: 100%;
+            border-radius: var(--radius);
+        }
+        .tryon-overlay-item {
+            position: absolute;
+            width: 30%;
+            opacity: 0.85;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .tryon-privacy {
+            font-size: 0.75rem;
+            color: var(--subtle);
+            margin-top: 16px;
+            font-style: italic;
+        }
+        .tryon-back-btn {
+            margin-top: 16px;
+            padding: 8px 20px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        /* Generative Try-On (FR-42) */
+        .tryon-gen-btn {
+            display: block;
+            margin: 16px auto 0;
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tryon-gen-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .tryon-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .tryon-gen-spinner {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .tryon-gen-spinner .phase-text {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .tryon-gen-spinner .spinner-bar {
+            width: 200px;
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .tryon-gen-spinner .spinner-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+            animation: spinFill 25s ease-in-out forwards;
+        }
+        @keyframes spinFill { 0% { width: 0%; } 30% { width: 35%; } 60% { width: 65%; } 100% { width: 95%; } }
+        .tryon-gen-result {
+            text-align: center;
+            margin-top: 16px;
+        }
+        .tryon-gen-result img {
+            max-width: 400px;
+            width: 100%;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+        }
+        .tryon-gen-disclaimer {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 14px;
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: #6366f1;
+            font-weight: 500;
+        }
+        .tryon-regen-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+        .tryon-regen-btn:hover { border-color: #6366f1; color: #6366f1; }
+
+        /* --- USER PROFILE SELECTOR (H9-03) --- */
+        .profile-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+        }
+        .profile-selector-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+        }
+        .profile-btn {
+            padding: 8px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .profile-btn:hover { border-color: var(--accent); }
+        .profile-btn.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #fff;
+        }
+        .profile-btn-guest {
+            padding: 8px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+        .profile-btn-guest:hover { border-color: var(--muted); }
+        .profile-btn-guest.active {
+            border-color: var(--muted);
+            background: var(--border-light);
+        }
+        .profile-stats {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-align: right;
+        }
+        .style-dna-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .style-dna-chip {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        /* --- AI COMPANION PANEL (H8-05) --- */
+        .companion-trigger {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #2f6d4b, #1a3a5c);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .companion-trigger:hover { opacity: 0.9; }
+        .companion-trigger:disabled { opacity: 0.4; cursor: not-allowed; }
+        .companion-loading {
+            text-align: center;
+            padding: 24px;
+            color: var(--accent);
+            font-style: italic;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .companion-panel {
+            max-width: 500px;
+            margin: 24px auto 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+        .companion-panel-header {
+            padding: 16px 20px;
+            font-family: "Fraunces", serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .companion-panel-body {
+            padding: 20px;
+        }
+        .companion-occasion {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+        .companion-score-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .companion-score-num {
+            font-family: "Fraunces", serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .companion-score-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .companion-score-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s ease;
+        }
+        .companion-items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px;
+        }
+        .companion-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.88rem;
+        }
+        .companion-item-row:last-child { border-bottom: none; }
+        .companion-item-name { flex: 1; }
+        .companion-item-score { font-weight: 600; margin-left: 8px; }
+        .companion-item-icon { margin-left: 6px; font-size: 0.9rem; }
+        .companion-verdict {
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--ink);
+            margin-bottom: 12px;
+            padding: 12px;
+            background: var(--accent-light);
+            border-radius: var(--radius-sm);
+        }
+        .companion-improvement {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+        .companion-retry-btn {
+            display: block;
+            margin: 16px auto 0;
+            padding: 10px 24px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .companion-retry-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .companion-occasion-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .companion-occasion-input:focus { outline: none; border-color: var(--accent); }
+
+        /* --- FOOTER --- */
+        .site-footer {
+            background: #1a1a1a;
+            color: #aaa;
+            padding: 32px 40px;
+            margin-top: 60px;
+            font-size: 12px;
+        }
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .footer-brand-name {
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .footer-tagline {
+            font-size: 11px;
+            color: #888;
+        }
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+        }
+        .footer-links a:hover { color: #fff; }
+        .footer-copy { color: #666; }
+
+        /* --- HERO / UPLOAD --- */
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px 60px;
+        }
+        .hero-title {
+            font-family: "Fraunces", serif;
+            font-weight: 500;
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            line-height: 1.2;
+            max-width: 600px;
+            letter-spacing: -0.5px;
+        }
+        .hero-subtitle {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 520px;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* --- SEARCH MODE TOGGLE --- */
+        .search-mode-toggle {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            max-width: 520px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .mode-btn:hover {
+            border-color: var(--muted);
+        }
+        .mode-btn.active {
+            border-color: var(--ink);
+            background: #f9f6f2;
+        }
+        .mode-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+        .mode-label { font-weight: 700; font-size: 15px; display: block; color: var(--ink); }
+        .mode-desc { font-size: 12px; color: var(--subtle); display: block; margin-top: 4px; }
+
+        /* --- OCCASION FIELD --- */
+        .occasion-field {
+            margin-top: 24px;
+            max-width: 520px;
+        }
+        .occasion-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .occasion-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font: inherit;
+            font-size: 1rem;
+            color: var(--ink);
+            background: var(--surface);
+            transition: border-color var(--transition);
+        }
+        .occasion-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .occasion-input::placeholder {
+            color: var(--subtle);
+            font-weight: 300;
+        }
+
+        /* --- HERO LAYOUT: two-column when suggestions visible --- */
+        .hero-layout {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        .hero-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .hero-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .hero-sidebar.visible {
+            display: block;
+        }
+        .hero-sidebar.animate-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        @media (max-width: 768px) {
+            .hero-layout { flex-direction: column; gap: 24px; }
+            .hero-sidebar { width: 100%; transform: translateY(10px); }
+            .hero-sidebar.animate-in { transform: translateY(0); }
+        }
+
+        /* --- SUGGESTIONS CARD --- */
+        .suggestions-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+        .suggestions-card-header {
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .suggestions-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0;
+        }
+        .suggestions-card-subtitle {
+            font-size: 12px;
+            color: var(--subtle);
+            margin-top: 4px;
+        }
+        .suggestions-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .suggestion-item {
+            padding: 0;
+        }
+        .suggestion-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 20px;
+            background: none;
+            border: none;
+            font: inherit;
+            font-size: 13px;
+            color: var(--muted);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+        .suggestion-btn:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+        .suggestion-btn .suggestion-icon {
+            font-size: 14px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .upload-area {
+            margin-top: 24px;
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .dropzone {
+            flex: 1;
+            max-width: 480px;
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 40px 32px;
+            text-align: center;
+            transition: border-color var(--transition), background var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .dropzone-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .dropzone-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--accent);
+        }
+        .dropzone-text {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        .dropzone-text strong {
+            color: var(--accent);
+            cursor: pointer;
+        }
+        .dropzone-formats {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--subtle);
+        }
+
+        /* Associate mode: dual upload options */
+        .associate-upload-options {
+            display: none;
+            gap: 16px;
+            margin-top: 24px;
+            max-width: 520px;
+        }
+        .associate-upload-options.active { display: flex; }
+        .associate-upload-btn {
+            flex: 1;
+            min-height: 60px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            font: inherit;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition);
+        }
+        .associate-upload-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .associate-upload-btn svg {
+            width: 22px; height: 22px;
+            stroke: currentColor; fill: none; stroke-width: 1.8;
+        }
+
+        /* Preview thumbnail when file is selected */
+        .upload-preview {
+            max-width: 200px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: none;
+            flex-direction: column;
+        }
+        .upload-preview.visible { display: flex; }
+        .upload-preview img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+        .upload-preview-info {
+            padding: 12px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .actions-row {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 28px;
+            font: inherit;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--ink);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #333; }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            padding: 12px 16px;
+        }
+        .btn-ghost:hover { color: var(--ink); }
+
+        /* Associate mode: bigger touch targets */
+        body.associate-mode .btn { min-height: 60px; padding: 14px 32px; font-size: 1.05rem; }
+
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none !important; }
+
+        .error-msg {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: var(--radius-sm);
+            color: var(--danger);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* --- RESULTS --- */
+        .results-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .results-label {
+            font-family: "Fraunces", serif;
+            font-weight: 500;
+            font-size: 1.4rem;
+        }
+        .results-count {
+            font-size: 0.85rem;
+            color: var(--subtle);
+            background: var(--border-light);
+            padding: 4px 12px;
+            border-radius: 999px;
+        }
+
+        /* --- OUTFIT BOARD (FR-16) --- */
+        .outfit-board {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            align-items: start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .outfit-board-divider {
+            display: none;
+        }
+
+        /* Uploaded item - left column (enhanced) */
+        .uploaded-card {
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            align-self: stretch;
+        }
+        .uploaded-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+        .uploaded-card-body {
+            padding: 20px;
+        }
+        .uploaded-card-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .uploaded-card-name {
+            font-family: "Fraunces", serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            line-height: 1.35;
+            margin-bottom: 12px;
+        }
+        .uploaded-card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .tag-pill {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: var(--border-light);
+            color: var(--muted);
+        }
+        .uploaded-card-occasion {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        /* Match cards - right column */
+        .matches-column {
+            padding: 24px;
+        }
+        .matches-column-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--subtle);
+            margin-bottom: 16px;
+        }
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .match-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: box-shadow var(--transition), transform var(--transition);
+            position: relative;
+        }
+        .match-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .match-card-img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background: var(--border-light);
+        }
+        .match-card-img-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, var(--border-light) 0%, var(--border) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--subtle);
+            font-size: 0.8rem;
+        }
+
+        /* Inventory badge */
+        .inventory-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            z-index: 2;
+        }
+        .inventory-badge.in_stock { background: #d4edda; color: #155724; }
+        .inventory-badge.low_stock { background: #fff3cd; color: #856404; }
+        .inventory-badge.online_only { background: #d1ecf1; color: #0c5460; }
+
+        .match-card-body {
+            padding: 14px 16px 18px;
+        }
+        .match-card-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .match-card-meta-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .match-card-type {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .match-card-price {
+            font-family: "Fraunces", serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--ink);
+        }
+        .match-label-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+        .match-label-debug {
+            font-size: 0.7rem;
+            color: var(--subtle);
+            margin-left: 6px;
+        }
+        .match-card-reasoning {
+            font-size: 0.85rem;
+            color: #444;
+            line-height: 1.55;
+            font-weight: 300;
+        }
+        .feedback-row {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .icon-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-light);
+        }
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+        }
+        .match-card.liked {
+            border-left: 4px solid var(--accent);
+        }
+        .match-card.disliked {
+            opacity: 0.5;
+        }
+
+        /* Find in Store CTA (associate mode) */
+        .find-in-store-btn {
+            display: none;
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-sm);
+            background: var(--accent-light);
+            color: var(--accent);
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all var(--transition);
+        }
+        .find-in-store-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        body.associate-mode .find-in-store-btn { display: block; min-height: 60px; font-size: 0.95rem; }
+
+        .wishlist-fab {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 20;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 999px;
+            box-shadow: var(--shadow-md);
+            padding: 10px 14px;
+            color: var(--ink);
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            cursor: pointer;
+        }
+        .wishlist-badge {
+            min-width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+        .wishlist-panel {
+            position: fixed;
+            right: 22px;
+            bottom: 72px;
+            width: min(360px, calc(100vw - 44px));
+            max-height: 62vh;
+            overflow: auto;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-lg);
+            z-index: 21;
+            padding: 12px;
+        }
+        .wishlist-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .wishlist-item {
+            display: grid;
+            grid-template-columns: 44px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 0;
+            border-top: 1px solid var(--border-light);
+        }
+        .wishlist-item:first-of-type {
+            border-top: 0;
+        }
+        .wishlist-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--border-light);
+        }
+        .wishlist-name {
+            font-size: 0.86rem;
+            color: var(--ink);
+            line-height: 1.3;
+        }
+        .wishlist-remove {
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--muted);
+            border-radius: 8px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.76rem;
+        }
+        .wishlist-empty {
+            color: var(--muted);
+            font-size: 0.86rem;
+            padding: 6px 0;
+        }
+
+        /* --- NO MATCH STATE (FR-23) --- */
+        .no-match {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .no-match-icon {
+            width: 64px; height: 64px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .no-match-icon svg {
+            width: 28px; height: 28px;
+            stroke: var(--subtle);
+        }
+        .no-match h3 {
+            font-family: "Fraunces", serif;
+            font-weight: 500;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .no-match p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .no-match-suggestions {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .no-match-suggestions .btn {
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+        }
+        .no-match-suggestions .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* --- ASSOCIATE MODE: FULL-SCREEN --- */
+        body.associate-mode .nav, body.associate-mode .hero, body.associate-mode .results-section {
+            max-width: 100%;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .nav, .hero, .results-section { padding-left: 20px; padding-right: 20px; }
+            .upload-area { flex-direction: column; }
+            .dropzone { max-width: 100%; }
+            .upload-preview { max-width: 100%; flex-direction: row; }
+            .upload-preview img { width: 80px; aspect-ratio: 1; }
+            .outfit-board {
+                grid-template-columns: 1fr;
+            }
+            .uploaded-card {
+                position: static;
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .uploaded-card img { aspect-ratio: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <div class="promo-bar">
+        <span class="promo-text">
+            ✦ Free shipping on orders over $75 &nbsp;&nbsp;|&nbsp;&nbsp;
+            New arrivals every Thursday &nbsp;&nbsp;|&nbsp;&nbsp;
+            Members get early access to sales —
+            <a href="#" class="promo-link">Join now</a>
+        </span>
+    </div>
+
+    <nav class="nav">
+        <!-- ZONA IZQUIERDA: marca RetailNext -->
+        <div class="nav-left">
+            <a href="/" class="nav-brand-retailnext">
+                <span class="brand-name">RetailNext</span>
+            </a>
+        </div>
+
+        <!-- ZONA CENTRAL: links de navegación -->
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link">New Arrivals</a></li>
+                <li><a href="#" class="nav-link">Women</a></li>
+                <li><a href="#" class="nav-link">Men</a></li>
+                <li><a href="#" class="nav-link">Accessories</a></li>
+                <li>
+                    <a href="#" class="nav-link nav-link-gptoutfit active" onclick="showStylist(); event.preventDefault();">
+                        ✦ AI Stylist
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link nav-link-wardrobe" id="navWardrobe" onclick="showWardrobe(event)">
+                        ✦ AI Wardrobe <span class="wardrobe-badge" id="wardrobeCount">(0)</span>
+                    </a>
+                </li>
+                <li><a href="#" class="nav-link nav-link-sale">Sale</a></li>
+            </ul>
+        </div>
+
+        <!-- ZONA DERECHA: iconos de utilidad -->
+        <div class="nav-right">
+            <button class="nav-icon-btn" aria-label="Search" title="Search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+            <button class="nav-icon-btn" aria-label="My Account" title="My Account">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </button>
+            <button class="nav-icon-btn nav-cart-btn" aria-label="Cart" title="Cart">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                <span class="cart-badge">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- AI STYLIST VIEW -->
+    <div id="stylistView">
+    <section class="hero">
+        <h1 class="hero-title">Find the perfect pieces to complete your outfit</h1>
+        <p id="heroSubtitle" class="hero-subtitle">Upload a clothing item and our AI stylist will curate complementary pieces from the catalog with professional styling reasoning.</p>
+
+        <div class="hero-layout">
+            <div class="hero-main">
+                <!-- Search Mode Toggle -->
+                <div class="search-mode-toggle">
+                    <button class="mode-btn active" data-mode="complementary" id="btn-complementary" type="button">
+                        <span class="mode-icon">&#x1F457;</span>
+                        <span class="mode-label">Complete My Outfit</span>
+                        <span class="mode-desc">Find pieces that go with this item</span>
+                    </button>
+                    <button class="mode-btn" data-mode="similarity" id="btn-similarity" type="button">
+                        <span class="mode-icon">&#x1F50D;</span>
+                        <span class="mode-label">Find Similar Items</span>
+                        <span class="mode-desc">Find items like this one</span>
+                    </button>
+                    <button class="mode-btn" data-mode="keyword" id="btn-keyword" type="button">
+                        <span class="mode-icon">&#x270F;&#xFE0F;</span>
+                        <span class="mode-label">I Know What I Want</span>
+                        <span class="mode-desc">Search by text description</span>
+                    </button>
+                </div>
+
+                <!-- Occasion Input (FR-25) -->
+                <div class="occasion-field">
+                    <label class="occasion-label" for="occasionInput">What's the occasion?</label>
+                    <input type="text" id="occasionInput" class="occasion-input" placeholder="e.g. garden wedding, job interview, black tie gala">
+                </div>
+
+                <!-- Standard upload (hidden in associate mode) -->
+                <div id="standardUpload" class="upload-area">
+                    <div id="dropzone" class="dropzone">
+                        <div class="dropzone-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                            </svg>
+                        </div>
+                        <p class="dropzone-text"><strong>Click to upload</strong> or drag and drop</p>
+                        <p class="dropzone-formats">JPEG, PNG, or WebP</p>
+                        <input id="fileInput" class="hidden" type="file" accept="image/jpeg,image/png,image/webp">
+                    </div>
+
+                    <div id="uploadPreview" class="upload-preview">
+                        <img id="previewImg" src="" alt="Preview">
+                        <div class="upload-preview-info">
+                            <span id="previewName">filename.jpg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Associate mode: dual upload buttons -->
+                <div id="associateUpload" class="associate-upload-options">
+                    <button id="takePhotoBtn" class="associate-upload-btn" type="button">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+                        Take Photo
+                    </button>
+                    <button id="uploadFileBtn" class="associate-upload-btn" type="button">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                        Upload File
+                    </button>
+                    <input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment">
+                </div>
+
+                <!-- Keyword Search Panel (H9-02) -->
+                <div id="keywordSearchPanel" class="keyword-search-panel hidden">
+                    <div class="keyword-search-input-row">
+                        <input type="text" id="keywordInput" class="keyword-input" placeholder="e.g. grey linen trousers, white summer dress, black leather loafers...">
+                        <button id="keywordSearchBtn" class="btn btn-primary keyword-search-btn" type="button">Search</button>
+                    </div>
+                    <div class="keyword-gender-filter">
+                        <span style="font-size:0.8rem;color:var(--muted);margin-right:8px;">Filter:</span>
+                        <button class="keyword-gender-btn active" data-gender="Men" type="button">Men</button>
+                        <button class="keyword-gender-btn" data-gender="Women" type="button">Women</button>
+                        <button class="keyword-gender-btn" data-gender="" type="button">All</button>
+                    </div>
+                    <div id="keywordResults"></div>
+                </div>
+
+                <div class="actions-row" id="imageActionsRow">
+                    <button id="analyzeBtn" class="btn btn-primary" type="button" disabled>
+                        <span id="spinner" class="spinner hidden"></span>
+                        <span id="analyzeText">Find Matching Pieces</span>
+                    </button>
+                    <button id="clearBtn" class="btn btn-ghost hidden" type="button">Clear</button>
+                </div>
+
+                <div id="error" class="error-msg hidden"></div>
+            </div>
+
+            <!-- SIDEBAR: Suggestions card (slides in after upload) -->
+            <aside id="suggestionsSidebar" class="hero-sidebar">
+                <div class="suggestions-card">
+                    <div class="suggestions-card-header">
+                        <p id="suggestionsTitle" class="suggestions-card-title">Try a suggestion</p>
+                        <p id="suggestionsSubtitle" class="suggestions-card-subtitle">Click any option to fill in the field</p>
+                    </div>
+                    <ul id="suggestionsList" class="suggestions-list"></ul>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="resultsSection" class="results-section hidden">
+        <div class="results-header">
+            <h2 id="resultsLabel" class="results-label">Your Look is Ready</h2>
+            <span id="matchCount" class="results-count"></span>
+        </div>
+
+        <div id="outfitBoard" class="outfit-board">
+            <!-- Uploaded item card (left) -->
+            <div id="uploadedCard" class="uploaded-card"></div>
+            <!-- Matches column (right) -->
+            <div class="matches-column">
+                <div class="matches-column-label">Completes Your Look</div>
+                <div id="matchesGrid" class="matches-grid"></div>
+            </div>
+        </div>
+    </section>
+    </div><!-- /stylistView -->
+
+    <!-- AI WARDROBE VIEW -->
+    <div id="wardrobeView" class="hidden">
+        <section class="wardrobe-section">
+            <div class="wardrobe-header">
+                <h1>✦ AI Wardrobe</h1>
+                <button class="wardrobe-edit-profile" id="editProfileBtn" onclick="openProfileModal()">Edit Profile</button>
+            </div>
+
+            <!-- Profile Selector (H9-03) -->
+            <div class="profile-selector" id="profileSelector">
+                <span class="profile-selector-label">👤 Profile:</span>
+                <button class="profile-btn" id="profileBtnJavier" onclick="switchProfile('javier')">Javier</button>
+                <button class="profile-btn" id="profileBtnLaura" onclick="switchProfile('laura')">Laura</button>
+                <button class="profile-btn-guest" id="profileBtnGuest" onclick="switchProfile('guest')">Guest</button>
+                <div class="profile-stats" id="profileStatsBar"></div>
+            </div>
+            <div class="style-dna-chips" id="styleDnaChips"></div>
+
+            <div class="wardrobe-tabs">
+                <button class="wardrobe-tab active" data-tab="discover" onclick="setWardrobeTab('discover')">① Discover</button>
+                <button class="wardrobe-tab" data-tab="mywardrobe" onclick="setWardrobeTab('mywardrobe')">② My Wardrobe <span id="wardrobeTabCount">(0)</span></button>
+                <button class="wardrobe-tab" data-tab="tryon" onclick="setWardrobeTab('tryon')">③ Try It On</button>
+            </div>
+
+            <!-- ① Discover -->
+            <div id="tabDiscover" class="wardrobe-tab-content active">
+                <div class="discover-form">
+                    <textarea id="discoverOccasion" class="discover-textarea"
+                        placeholder="Describe your occasion... e.g. rooftop cocktail party in Barcelona, first date at a wine bar, job interview at a creative agency"></textarea>
+                    <button class="discover-btn" id="discoverBtn" onclick="runDiscover()">Find My Outfit</button>
+                </div>
+                <div id="discoverSpinner" class="discover-spinner hidden">
+                    <div class="spinner"></div>
+                    <p style="margin-top:12px;">Finding the perfect outfit...</p>
+                </div>
+                <div id="discoverResults" class="hidden">
+                    <div id="discoverConcept" class="discover-concept"></div>
+                    <div id="discoverItemsGrid"></div>
+                </div>
+            </div>
+
+            <!-- ② My Wardrobe -->
+            <div id="tabMyWardrobe" class="wardrobe-tab-content">
+                <div id="completenessBar"></div>
+                <div id="myWardrobeContent"></div>
+            </div>
+
+            <!-- ③ Try It On -->
+            <div id="tabTryOn" class="wardrobe-tab-content">
+                <div id="tryOnContent"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profileOverlay" class="profile-overlay hidden">
+        <div class="profile-modal">
+            <div id="profileStep1">
+                <h2>Welcome to AI Wardrobe</h2>
+                <p>Tell us about yourself so we can style you perfectly.</p>
+                <h3 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:16px;">I shop for</h3>
+                <div class="profile-gender-grid">
+                    <button class="profile-gender-btn" data-gender="Men" onclick="selectGender(this)">
+                        <span class="gender-icon">👔</span>
+                        Men
+                    </button>
+                    <button class="profile-gender-btn" data-gender="Women" onclick="selectGender(this)">
+                        <span class="gender-icon">👗</span>
+                        Women
+                    </button>
+                    <button class="profile-gender-btn" data-gender="Non-binary" onclick="selectGender(this)">
+                        <span class="gender-icon">✦</span>
+                        Non-binary
+                    </button>
+                </div>
+            </div>
+            <div id="profileStep2" class="hidden">
+                <h2>What best describes your style?</h2>
+                <p>This helps us find the right pieces for you.</p>
+                <div class="profile-vibe-grid">
+                    <button class="profile-vibe-btn" data-vibe="Minimal & Clean" onclick="selectVibe(this)">✨ Minimal & Clean</button>
+                    <button class="profile-vibe-btn" data-vibe="Smart & Polished" onclick="selectVibe(this)">🧥 Smart & Polished</button>
+                    <button class="profile-vibe-btn" data-vibe="Casual & Relaxed" onclick="selectVibe(this)">🌿 Casual & Relaxed</button>
+                    <button class="profile-vibe-btn" data-vibe="Bold & Expressive" onclick="selectVibe(this)">🔥 Bold & Expressive</button>
+                </div>
+            </div>
+            <div id="profileStep3" class="hidden">
+                <h2>What's your typical budget per item?</h2>
+                <p>We'll prioritise items in your range.</p>
+                <div class="profile-vibe-grid">
+                    <button class="profile-vibe-btn" data-budget="under50" onclick="selectBudget(this)">Under €50</button>
+                    <button class="profile-vibe-btn" data-budget="50-100" onclick="selectBudget(this)">€50 – €100</button>
+                    <button class="profile-vibe-btn" data-budget="100-200" onclick="selectBudget(this)">€100 – €200</button>
+                    <button class="profile-vibe-btn" data-budget="200plus" onclick="selectBudget(this)">€200+</button>
+                </div>
+            </div>
+            <a href="#" id="surveySkipLink" class="survey-skip-link" onclick="event.preventDefault(); skipSurvey();">Skip for now</a>
+        </div>
+    </div>
+
+    <!-- Confirm modal for Clear All -->
+    <div id="confirmOverlay" class="confirm-overlay hidden">
+        <div class="confirm-modal">
+            <h3 id="confirmTitle">Clear Wardrobe?</h3>
+            <p id="confirmMsg">Remove all items from your wardrobe? This cannot be undone.</p>
+            <div class="confirm-modal-actions">
+                <button class="btn-confirm-cancel" onclick="$('confirmOverlay').classList.add('hidden')">Cancel</button>
+                <button class="btn-confirm-danger" id="confirmAction">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification for wardrobe actions -->
+    <div id="wardrobeToast" class="wardrobe-toast"></div>
+
+    <button id="wishlistFab" class="wishlist-fab" type="button" aria-label="Wishlist">
+        <span>Wishlist</span>
+        <span id="wishlistCount" class="wishlist-badge">0</span>
+    </button>
+    <aside id="wishlistPanel" class="wishlist-panel hidden">
+        <div class="wishlist-header">Saved Items</div>
+        <div id="wishlistItems"></div>
+    </aside>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const dropzone = $("dropzone");
+        const fileInput = $("fileInput");
+        const cameraInput = $("cameraInput");
+        const analyzeBtn = $("analyzeBtn");
+        const clearBtn = $("clearBtn");
+        const analyzeText = $("analyzeText");
+        const spinnerEl = $("spinner");
+        const errorEl = $("error");
+        const uploadPreview = $("uploadPreview");
+        const previewImg = $("previewImg");
+        const previewName = $("previewName");
+        const resultsSection = $("resultsSection");
+        const resultsLabel = $("resultsLabel");
+        const matchCount = $("matchCount");
+        const uploadedCard = $("uploadedCard");
+        const matchesGrid = $("matchesGrid");
+        const wishlistFab = $("wishlistFab");
+        const wishlistPanel = $("wishlistPanel");
+        const wishlistItems = $("wishlistItems");
+        const wishlistCount = $("wishlistCount");
+        const occasionInput = $("occasionInput");
+
+        const heroSubtitle = $("heroSubtitle");
+        const occasionField = document.querySelector(".occasion-field");
+        const btnComplementary = $("btn-complementary");
+        const btnSimilarity = $("btn-similarity");
+        const matchesColumnLabel = document.querySelector(".matches-column-label");
+
+        const WISHLIST_KEY = "gptoutfit_wishlist";
+        const params = new URLSearchParams(window.location.search);
+        const isAssociateMode = params.get("mode") === "associate";
+        const isDebugMode = params.has("debug");
+
+        let selectedFile = null;
+        let wishlist = [];
+        let idleTimer = null;
+        let searchMode = "complementary";
+
+        // --- User Profiles (H9-03) ---
+        const PROFILES = {
+            javier: {
+                id: "javier", name: "Javier Lombana", gender: "Men",
+                location: "Madrid, Spain", height: "185 cm", weight: "100 kg",
+                build: "Athletic / Broad shoulders",
+                sizes: { top: "XL (EU 54)", trouser: "W36 L32", shoe: "44 EU / 10 UK", jacket: "XL / EU 54" },
+                style_tags: ["Smart Casual", "Business Casual", "Minimal"],
+                preferred_brands: ["Massimo Dutti", "Zara Man", "Hugo Boss", "Calvin Klein", "Tommy Hilfiger"],
+                budget_range: "€50–€200",
+                preferred_colours: ["Navy", "Charcoal", "White", "Camel", "Olive green"],
+                fit_preference: "Slim-fit shirts, straight or slim trousers. Not skinny.",
+                typical_occasions: "Business meetings, client dinners, weekend city walks, travel",
+                dislikes: ["Synthetic fabrics", "Visible logos", "Overly casual looks in professional settings"],
+                purchase_history: [
+                    { item: "Navy slim-fit blazer", brand: "Massimo Dutti", price: "€189", season: "AW 2024" },
+                    { item: "White Oxford shirt", brand: "Zara Man", price: "€39", season: "SS 2024" },
+                    { item: "Charcoal slim chinos", brand: "Hugo Boss", price: "€119", season: "AW 2024" },
+                    { item: "White linen shirt", brand: "Massimo Dutti", price: "€79", season: "SS 2024" },
+                    { item: "Brown leather Chelsea boots", brand: "Zara Man", price: "€89", season: "AW 2023" },
+                    { item: "Navy crewneck sweater", brand: "Calvin Klein", price: "€89", season: "AW 2024" },
+                    { item: "Beige trench coat", brand: "Tommy Hilfiger", price: "€299", season: "AW 2023" },
+                    { item: "Grey merino polo", brand: "Massimo Dutti", price: "€69", season: "SS 2025" },
+                    { item: "Black leather belt", brand: "Hugo Boss", price: "€55", season: "AW 2024" },
+                    { item: "White trainers", brand: "Calvin Klein", price: "€95", season: "SS 2024" },
+                ]
+            },
+            laura: {
+                id: "laura", name: "Laura García", gender: "Women",
+                location: "Barcelona, Spain", height: "167 cm", weight: "58 kg",
+                build: "Slim / Pear shape",
+                sizes: { top: "S (EU 36)", trouser: "S / EU 36, Waist 27", shoe: "38 EU / 5 UK", dress: "EU 36 / UK 8" },
+                style_tags: ["Feminine Minimal", "Effortless Chic", "Classic Modern"],
+                preferred_brands: ["& Other Stories", "Mango", "Cos", "Arket", "Sandro"],
+                budget_range: "€30–€150",
+                preferred_colours: ["Ivory", "Blush", "Terracotta", "Sage green", "Black"],
+                fit_preference: "Fitted tops, wide-leg or straight trousers, midi lengths. Avoids bodycon.",
+                typical_occasions: "Creative agency work, rooftop drinks, weekend markets, travel, gallery events",
+                dislikes: ["Fast fashion basics", "Overly sporty looks", "Very structured corporate style"],
+                purchase_history: [
+                    { item: "Ivory silk blouse", brand: "& Other Stories", price: "€79", season: "SS 2024" },
+                    { item: "Terracotta wide-leg trousers", brand: "Mango", price: "€59", season: "SS 2024" },
+                    { item: "Camel wool coat", brand: "Arket", price: "€229", season: "AW 2024" },
+                    { item: "Black midi wrap dress", brand: "Cos", price: "€99", season: "AW 2024" },
+                    { item: "Sage green linen shirt", brand: "& Other Stories", price: "€69", season: "SS 2025" },
+                    { item: "White straight-leg jeans", brand: "Mango", price: "€49", season: "SS 2024" },
+                    { item: "Blush knit cardigan", brand: "Arket", price: "€89", season: "AW 2024" },
+                    { item: "Brown suede ankle boots", brand: "& Other Stories", price: "€149", season: "AW 2023" },
+                    { item: "Gold hoop earrings set", brand: "Sandro", price: "€65", season: "SS 2024" },
+                    { item: "Beige linen blazer", brand: "Cos", price: "€119", season: "SS 2025" },
+                ]
+            }
+        };
+
+        let _activeProfileId = sessionStorage.getItem("active_profile") || "guest";
+
+        function getActiveProfile() {
+            return PROFILES[_activeProfileId] || null;
+        }
+
+        function getProfileGender() {
+            const p = getActiveProfile();
+            if (p) return p.gender;
+            const stored = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+            return stored.gender || "Men";
+        }
+
+        function switchProfile(profileId) {
+            if (profileId === _activeProfileId) return;
+            const count = getWardrobeBasket().length;
+            if (count > 0) {
+                $("confirmTitle").textContent = "Switch Profile?";
+                const name = PROFILES[profileId]?.name || "Guest";
+                $("confirmMsg").textContent = `Switch to ${name}? Your current wardrobe (${count} items) will be cleared.`;
+                const btn = $("confirmAction");
+                btn.textContent = "Switch";
+                btn.onclick = () => {
+                    _doSwitchProfile(profileId);
+                    $("confirmOverlay").classList.add("hidden");
+                };
+                $("confirmOverlay").classList.remove("hidden");
+            } else {
+                _doSwitchProfile(profileId);
+            }
+        }
+
+        function _doSwitchProfile(profileId) {
+            _activeProfileId = profileId;
+            sessionStorage.setItem("active_profile", profileId);
+            saveWardrobeBasket([]);
+            const p = getActiveProfile();
+            if (p) {
+                sessionStorage.setItem("wardrobe_profile", JSON.stringify({
+                    gender: p.gender,
+                    style_vibe: p.style_tags[0] || "Casual"
+                }));
+            }
+            renderProfileSelector();
+            showWardrobeToast(p ? `Profile: ${p.name}` : "Guest mode");
+        }
+
+        function renderProfileSelector() {
+            $("profileBtnJavier").classList.toggle("active", _activeProfileId === "javier");
+            $("profileBtnLaura").classList.toggle("active", _activeProfileId === "laura");
+            $("profileBtnGuest").classList.toggle("active", _activeProfileId === "guest");
+
+            const p = getActiveProfile();
+            const statsBar = $("profileStatsBar");
+            const dnaChips = $("styleDnaChips");
+
+            if (p) {
+                statsBar.innerHTML = `${p.height} · ${p.sizes.top} · ${p.build}`;
+                dnaChips.innerHTML = p.style_tags
+                    .map(t => `<span class="style-dna-chip">${t}</span>`)
+                    .join("") +
+                    p.preferred_colours.slice(0, 3)
+                    .map(c => `<span class="style-dna-chip" style="background:rgba(0,0,0,0.05);color:var(--muted);">${c}</span>`)
+                    .join("");
+            } else {
+                statsBar.innerHTML = "";
+                dnaChips.innerHTML = "";
+            }
+        }
+
+        function getProfileContextForCompanion() {
+            const p = getActiveProfile();
+            if (!p) return "";
+            return `You are evaluating an outfit for ${p.name}, ${p.height}, ${p.weight}, ${p.build}. ` +
+                `Their preferred style is ${p.style_tags.join(", ")}. ` +
+                `They dislike ${p.dislikes.join(", ")}. ` +
+                `Preferred colours: ${p.preferred_colours.join(", ")}. ` +
+                `Fit preference: ${p.fit_preference}. ` +
+                `Score the outfit considering fit for their build and alignment with their taste.`;
+        }
+
+        function getRecentPurchasesContext() {
+            const p = getActiveProfile();
+            if (!p || !p.purchase_history) return "";
+            const recent = p.purchase_history.slice(0, 3);
+            return `The user recently purchased: ${recent.map(h => h.item + " (" + h.brand + ")").join(", ")}. Suggest items that complement their existing wardrobe.`;
+        }
+
+        // --- Wardrobe Basket (shared between AI Stylist & AI Wardrobe) ---
+        const WARDROBE_KEY = "wardrobe_basket";
+
+        function getWardrobeBasket() {
+            try { return JSON.parse(sessionStorage.getItem(WARDROBE_KEY)) || []; }
+            catch { return []; }
+        }
+        function saveWardrobeBasket(basket) {
+            sessionStorage.setItem(WARDROBE_KEY, JSON.stringify(basket));
+            updateWardrobeCount();
+            updateWardrobeTabCount();
+        }
+        function updateWardrobeCount() {
+            const count = getWardrobeBasket().length;
+            const el = $("wardrobeCount");
+            if (el) el.textContent = `(${count})`;
+        }
+        let _toastTimer = null;
+        function showWardrobeToast(msg) {
+            const toast = $("wardrobeToast");
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add("visible");
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => toast.classList.remove("visible"), 2000);
+        }
+        function toggleWardrobeItem(item) {
+            let basket = getWardrobeBasket();
+            const idx = basket.findIndex(b => String(b.id) === String(item.id));
+            if (idx >= 0) {
+                basket.splice(idx, 1);
+                saveWardrobeBasket(basket);
+                showWardrobeToast("Removed from Wardrobe");
+                return false;
+            } else if (basket.length < 20) {
+                basket.push(item);
+                saveWardrobeBasket(basket);
+                showWardrobeToast("Added to Wardrobe ✓");
+                return true;
+            }
+            return false;
+        }
+        let _profileGender = null;
+        let _profileVibe = null;
+        let _profileBudget = null;
+
+        function showWardrobe(e) {
+            e.preventDefault();
+            $("stylistView").classList.add("hidden");
+            $("wardrobeView").classList.remove("hidden");
+            document.querySelector(".nav-link-gptoutfit").classList.remove("active");
+            $("navWardrobe").classList.add("active");
+            renderProfileSelector();
+            // Show entry survey for guest users on first visit (skip for Javier/Laura)
+            if (_activeProfileId === "guest" && !sessionStorage.getItem("survey_completed")) {
+                openProfileModal();
+            }
+            updateWardrobeTabCount();
+        }
+        function showStylist() {
+            $("wardrobeView").classList.add("hidden");
+            $("stylistView").classList.remove("hidden");
+            document.querySelector(".nav-link-gptoutfit").classList.add("active");
+            $("navWardrobe").classList.remove("active");
+        }
+        function setWardrobeTab(tab) {
+            document.querySelectorAll(".wardrobe-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+            document.querySelectorAll(".wardrobe-tab-content").forEach(c => c.classList.remove("active"));
+            const target = tab === "discover" ? "tabDiscover" : tab === "mywardrobe" ? "tabMyWardrobe" : "tabTryOn";
+            $(target).classList.add("active");
+        }
+        function updateWardrobeTabCount() {
+            const count = getWardrobeBasket().length;
+            const el = $("wardrobeTabCount");
+            if (el) el.textContent = `(${count})`;
+        }
+        function openProfileModal() {
+            _profileGender = null;
+            _profileVibe = null;
+            _profileBudget = null;
+            $("profileStep1").classList.remove("hidden");
+            $("profileStep2").classList.add("hidden");
+            $("profileStep3").classList.add("hidden");
+            document.querySelectorAll(".profile-gender-btn").forEach(b => b.classList.remove("selected"));
+            document.querySelectorAll(".profile-vibe-btn").forEach(b => b.classList.remove("selected"));
+            $("profileOverlay").classList.remove("hidden");
+        }
+        function selectGender(btn) {
+            _profileGender = btn.dataset.gender;
+            document.querySelectorAll(".profile-gender-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            setTimeout(() => {
+                $("profileStep1").classList.add("hidden");
+                $("profileStep2").classList.remove("hidden");
+            }, 300);
+        }
+        function selectVibe(btn) {
+            _profileVibe = btn.dataset.vibe;
+            document.querySelectorAll("#profileStep2 .profile-vibe-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            setTimeout(() => {
+                $("profileStep2").classList.add("hidden");
+                $("profileStep3").classList.remove("hidden");
+            }, 300);
+        }
+        function selectBudget(btn) {
+            _profileBudget = btn.dataset.budget;
+            document.querySelectorAll("#profileStep3 .profile-vibe-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            setTimeout(() => confirmSurvey(), 400);
+        }
+        function confirmSurvey() {
+            const data = {
+                gender: _profileGender || "Men",
+                style_vibe: _profileVibe || "Casual & Relaxed",
+                budget: _profileBudget || "50-100"
+            };
+            sessionStorage.setItem("wardrobe_profile", JSON.stringify(data));
+            sessionStorage.setItem("survey_completed", "true");
+            $("profileOverlay").classList.add("hidden");
+        }
+        function skipSurvey() {
+            sessionStorage.setItem("survey_completed", "true");
+            $("profileOverlay").classList.add("hidden");
+        }
+
+        // --- Search Mode Toggle ---
+        function setSearchMode(mode) {
+            searchMode = mode;
+            btnComplementary.classList.toggle("active", mode === "complementary");
+            btnSimilarity.classList.toggle("active", mode === "similarity");
+            $("btn-keyword").classList.toggle("active", mode === "keyword");
+
+            const isKeyword = mode === "keyword";
+            $("standardUpload").style.display = isKeyword ? "none" : "";
+            $("associateUpload").style.display = isKeyword ? "none" : "";
+            $("imageActionsRow").style.display = isKeyword ? "none" : "";
+            $("keywordSearchPanel").classList.toggle("hidden", !isKeyword);
+            occasionField.style.display = isKeyword ? "none" : "";
+
+            if (mode === "keyword") {
+                heroSubtitle.textContent = "Describe what you're looking for and we'll search the catalog instantly — no image needed.";
+                // Pre-populate gender filter from profile
+                const pGender = getProfileGender();
+                document.querySelectorAll(".keyword-gender-btn").forEach(b => {
+                    b.classList.toggle("active", b.dataset.gender === pGender);
+                });
+            } else if (mode === "similarity") {
+                heroSubtitle.textContent = "Upload a clothing item and we'll find the most visually and stylistically similar items in our catalog.";
+                document.querySelector(".occasion-label").textContent = "Any preferences?";
+                occasionInput.placeholder = "e.g. darker shade, lightweight for summer, with patterns";
+                analyzeText.textContent = "Find Similar Items";
+            } else {
+                heroSubtitle.textContent = "Upload a clothing item and our AI stylist will curate complementary pieces from the catalog with professional styling reasoning.";
+                document.querySelector(".occasion-label").textContent = "What's the occasion?";
+                occasionInput.placeholder = "e.g. garden wedding, job interview, black tie gala";
+                analyzeText.textContent = "Find Matching Pieces";
+            }
+            if (selectedFile && !isKeyword) renderSuggestions();
+        }
+        btnComplementary.addEventListener("click", () => setSearchMode("complementary"));
+        btnSimilarity.addEventListener("click", () => setSearchMode("similarity"));
+        $("btn-keyword").addEventListener("click", () => setSearchMode("keyword"));
+
+        // --- Keyword Search (H9-02) ---
+        let _keywordGender = getProfileGender();
+        document.querySelectorAll(".keyword-gender-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".keyword-gender-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                _keywordGender = btn.dataset.gender;
+            });
+        });
+
+        $("keywordSearchBtn").addEventListener("click", runKeywordSearch);
+        $("keywordInput").addEventListener("keydown", e => {
+            if (e.key === "Enter") runKeywordSearch();
+        });
+
+        async function runKeywordSearch() {
+            const query = $("keywordInput").value.trim();
+            if (!query) return;
+
+            $("keywordSearchBtn").disabled = true;
+            $("keywordSearchBtn").textContent = "Searching...";
+
+            try {
+                const res = await fetch("/api/keyword-search", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        query,
+                        gender: _keywordGender,
+                        top_k: 6
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Search failed");
+                renderKeywordResults(query, data.items || [], data.count || 0);
+            } catch (err) {
+                const container = $("keywordResults");
+                container.innerHTML = `<p style="color:var(--danger);margin-top:16px;">${err.message}</p>`;
+            } finally {
+                $("keywordSearchBtn").disabled = false;
+                $("keywordSearchBtn").textContent = "Search";
+            }
+        }
+
+        function renderKeywordResults(query, items, count) {
+            const container = $("keywordResults");
+
+            const section = document.createElement("div");
+            section.className = "keyword-results-section";
+
+            if (items.length === 0) {
+                section.innerHTML = `
+                    <div class="keyword-results-header">No exact matches for "${query}". Try broader terms or use Complete My Outfit for AI-powered suggestions.</div>
+                `;
+            } else {
+                section.innerHTML = `<div class="keyword-results-header">Found ${count} items matching "${query}"</div>`;
+                const grid = document.createElement("div");
+                grid.className = "keyword-results-grid";
+
+                for (const item of items) {
+                    const inBasket = getWardrobeBasket().some(b => String(b.id) === String(item.id));
+                    const card = document.createElement("div");
+                    card.className = "discover-card";
+                    const btnClass = inBasket ? " in-wardrobe" : "";
+                    const btnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+                    card.innerHTML = `
+                        ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">` : `<div style="aspect-ratio:3/4;background:var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--muted);">No image</div>`}
+                        <div class="discover-card-body">
+                            <div class="discover-card-name">${item.name}</div>
+                            <div class="discover-card-meta">${item.articleType || ""} · ${item.baseColour || ""}</div>
+                            <button class="add-to-wardrobe-btn${btnClass}" type="button">${btnLabel}</button>
+                        </div>
+                    `;
+                    const wBtn = card.querySelector(".add-to-wardrobe-btn");
+                    wBtn.addEventListener("click", () => {
+                        const basket = getWardrobeBasket();
+                        const idx = basket.findIndex(b => String(b.id) === String(item.id));
+                        if (idx >= 0) {
+                            basket.splice(idx, 1);
+                            wBtn.classList.remove("in-wardrobe");
+                            wBtn.textContent = "+ Add to Wardrobe";
+                        } else {
+                            basket.push({
+                                id: item.id,
+                                productDisplayName: item.name,
+                                articleType: item.articleType,
+                                baseColour: item.baseColour,
+                                gender: item.gender || "",
+                                image_url: item.image_url,
+                                source: "search"
+                            });
+                            wBtn.classList.add("in-wardrobe");
+                            wBtn.textContent = "✓ In Wardrobe";
+                            showWardrobeToast("Added to Wardrobe ✓");
+                        }
+                        saveWardrobeBasket(basket);
+                        updateWardrobeCount();
+                    });
+                    grid.appendChild(card);
+                }
+                section.appendChild(grid);
+            }
+
+            // Clear previous results and show new ones
+            container.innerHTML = "";
+            container.appendChild(section);
+        }
+
+        // --- Suggestions Sidebar ---
+        const suggestionsSidebar = $("suggestionsSidebar");
+        const suggestionsList = $("suggestionsList");
+        const suggestionsTitle = $("suggestionsTitle");
+        const suggestionsSubtitle = $("suggestionsSubtitle");
+
+        const SUGGESTIONS = {
+            complementary: {
+                title: "Occasion ideas",
+                subtitle: "Click to auto-fill the field",
+                icon: "&#10022;",
+                items: [
+                    "Weekend brunch with friends",
+                    "Job interview at a tech company",
+                    "Business dinner with clients",
+                    "Cocktail party downtown",
+                    "Summer music festival",
+                    "Saturday date night",
+                    "Casual Friday at the office",
+                    "Family celebration",
+                    "Autumn road trip",
+                    "Black tie gala",
+                ],
+            },
+            similarity: {
+                title: "Preference ideas",
+                subtitle: "Click to auto-fill the field",
+                icon: "&#9670;",
+                items: [
+                    "Darker shade, more formal",
+                    "Lighter color, breathable fabric",
+                    "With stripes or patterns",
+                    "Similar style but in white",
+                    "Slim fit, modern cut",
+                    "Neutral tones, minimalist",
+                    "Same vibe but for summer",
+                    "Bolder color, statement piece",
+                    "Relaxed fit, everyday wear",
+                    "Premium look, similar silhouette",
+                ],
+            },
+        };
+
+        function renderSuggestions() {
+            const data = SUGGESTIONS[searchMode];
+            if (!data) return;
+            suggestionsTitle.textContent = data.title;
+            suggestionsSubtitle.textContent = data.subtitle;
+            suggestionsList.innerHTML = data.items.map(text =>
+                `<li class="suggestion-item"><button class="suggestion-btn" type="button"><span class="suggestion-icon">${data.icon}</span>${text}</button></li>`
+            ).join("");
+        }
+
+        function showSuggestions() {
+            renderSuggestions();
+            suggestionsSidebar.classList.add("visible");
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    suggestionsSidebar.classList.add("animate-in");
+                });
+            });
+        }
+
+        function hideSuggestions() {
+            suggestionsSidebar.classList.remove("animate-in");
+            setTimeout(() => suggestionsSidebar.classList.remove("visible"), 350);
+        }
+
+        suggestionsList.addEventListener("click", (e) => {
+            const btn = e.target.closest(".suggestion-btn");
+            if (!btn) return;
+            // Extract text without the icon span
+            const text = btn.textContent.trim();
+            occasionInput.value = text;
+            occasionInput.focus();
+        });
+
+        // --- Associate Mode Setup ---
+        if (isAssociateMode) {
+            document.body.classList.add("associate-mode");
+            const taglineEl = $("navTagline");
+            if (taglineEl) taglineEl.innerHTML = '<span class="associate-badge">Associate Mode</span>';
+            $("standardUpload").classList.add("hidden");
+            $("associateUpload").classList.add("active");
+
+            $("takePhotoBtn").addEventListener("click", () => cameraInput.click());
+            $("uploadFileBtn").addEventListener("click", () => fileInput.click());
+            cameraInput.addEventListener("change", (e) => setFile(e.target.files?.[0] || null));
+
+            // Auto-reset after 90s of inactivity
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => clearAll(), 90000);
+            }
+            document.addEventListener("click", resetIdleTimer);
+            document.addEventListener("touchstart", resetIdleTimer);
+            resetIdleTimer();
+        }
+
+        function loadWishlist() {
+            try {
+                const raw = sessionStorage.getItem(WISHLIST_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveWishlist() {
+            sessionStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
+        }
+
+        function updateWishlistUI() {
+            wishlistCount.textContent = String(wishlist.length);
+            wishlistItems.innerHTML = "";
+            if (wishlist.length === 0) {
+                const empty = document.createElement("p");
+                empty.className = "wishlist-empty";
+                empty.textContent = "No saved items yet.";
+                wishlistItems.appendChild(empty);
+                return;
+            }
+
+            for (const item of wishlist) {
+                const row = document.createElement("div");
+                row.className = "wishlist-item";
+
+                const thumb = document.createElement("img");
+                thumb.className = "wishlist-thumb";
+                thumb.alt = item.name || "Saved item";
+                thumb.src = item.image_url || "";
+
+                const name = document.createElement("div");
+                name.className = "wishlist-name";
+                name.textContent = item.name || "Unnamed Item";
+
+                const remove = document.createElement("button");
+                remove.className = "wishlist-remove";
+                remove.type = "button";
+                remove.textContent = "Remove";
+                remove.addEventListener("click", () => {
+                    wishlist = wishlist.filter((w) => String(w.id) !== String(item.id));
+                    saveWishlist();
+                    updateWishlistUI();
+                });
+
+                row.appendChild(thumb);
+                row.appendChild(name);
+                row.appendChild(remove);
+                wishlistItems.appendChild(row);
+            }
+        }
+
+        async function sendFeedback(itemId, action) {
+            await fetch("/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ item_id: itemId, action })
+            });
+        }
+
+        // --- File selection ---
+        function setFile(file) {
+            selectedFile = file;
+            if (file) {
+                previewName.textContent = file.name;
+                previewImg.src = URL.createObjectURL(file);
+                uploadPreview.classList.add("visible");
+                if (isAssociateMode) {
+                    // Show preview below the buttons in associate mode
+                    uploadPreview.style.maxWidth = "100%";
+                    $("associateUpload").after(uploadPreview);
+                }
+                analyzeBtn.disabled = false;
+                clearBtn.classList.remove("hidden");
+                showSuggestions();
+            } else {
+                uploadPreview.classList.remove("visible");
+                analyzeBtn.disabled = true;
+                clearBtn.classList.add("hidden");
+                hideSuggestions();
+            }
+        }
+
+        function clearAll() {
+            setFile(null);
+            fileInput.value = "";
+            if (cameraInput) cameraInput.value = "";
+            occasionInput.value = "";
+            resultsSection.classList.add("hidden");
+            hideSuggestions();
+            clearError();
+        }
+
+        // --- Loading / Error ---
+        function setLoading(on) {
+            analyzeBtn.disabled = on;
+            spinnerEl.classList.toggle("hidden", !on);
+            if (on) {
+                analyzeText.textContent = "Analyzing...";
+            } else {
+                analyzeText.textContent = searchMode === "similarity" ? "Find Similar Items" : "Find Matching Pieces";
+            }
+        }
+
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove("hidden");
+        }
+
+        function clearError() {
+            errorEl.textContent = "";
+            errorEl.classList.add("hidden");
+        }
+
+        // --- Render Results ---
+        function renderResults(payload) {
+            const item = payload.uploaded_item || {};
+            const preview = payload.uploaded_preview || "";
+            const matches = payload.matches || [];
+            const occasion = payload.occasion || "";
+            const mode = payload.search_mode || searchMode;
+
+            // Editorial headline — dynamic per mode
+            const articleName = item.articleType || "look";
+            if (mode === "similarity") {
+                if (matches.length === 0) {
+                    resultsLabel.textContent = "No Similar Items Found";
+                } else if (matches.length === 1) {
+                    resultsLabel.textContent = `A great alternative to your ${articleName}`;
+                } else {
+                    resultsLabel.textContent = `${matches.length} items similar to your ${articleName}`;
+                }
+                matchesColumnLabel.textContent = "Similar Items";
+            } else {
+                if (matches.length === 0) {
+                    resultsLabel.textContent = "Your Look";
+                } else if (matches.length === 1) {
+                    const occasionText = occasion ? ` for your ${occasion}` : "";
+                    resultsLabel.textContent = `The perfect match for your ${articleName}${occasionText}`;
+                } else {
+                    const occasionText = occasion ? ` for your ${occasion}` : "";
+                    resultsLabel.textContent = `${matches.length} pieces to complete your ${articleName}${occasionText}`;
+                }
+                matchesColumnLabel.textContent = "Completes Your Look";
+            }
+
+            // Uploaded item card — enhanced with tags
+            const tags = [item.articleType, item.color, item.style, item.gender].filter(Boolean);
+            const tagsHtml = tags.map(t => `<span class="tag-pill">${t}</span>`).join("");
+            const occasionHtml = occasion ? `<div class="uploaded-card-occasion">For: ${occasion}</div>` : "";
+
+            uploadedCard.innerHTML = `
+                ${preview ? `<img src="${preview}" alt="Your item">` : ""}
+                <div class="uploaded-card-body">
+                    <div class="uploaded-card-label">YOUR ITEM</div>
+                    <div class="uploaded-card-name">${item.description || item.articleType || "Clothing Item"}</div>
+                    <div class="uploaded-card-tags">${tagsHtml}</div>
+                    ${occasionHtml}
+                </div>
+            `;
+
+            // Matches
+            matchesGrid.innerHTML = "";
+
+            if (matches.length === 0) {
+                renderNoMatch();
+            } else {
+                matchCount.textContent = `${matches.length} match${matches.length !== 1 ? "es" : ""} found`;
+                for (const m of matches) {
+                    matchesGrid.appendChild(buildMatchCard(m));
+                }
+            }
+
+            resultsSection.classList.remove("hidden");
+            resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function buildMatchCard(m) {
+            const card = document.createElement("article");
+            card.className = "match-card";
+
+            const imgHtml = m.image_url
+                ? `<img class="match-card-img" src="${m.image_url}" alt="${m.productDisplayName || ""}" loading="lazy">`
+                : `<div class="match-card-img-placeholder">No image</div>`;
+
+            // Inventory badge
+            let inventoryHtml = "";
+            if (m.inventory && m.inventory.status) {
+                const inv = m.inventory;
+                let extraIcon = "";
+                if (inv.status === "low_stock") extraIcon = " &#9888;";
+                inventoryHtml = `<div class="inventory-badge ${inv.status}">${inv.label}${extraIcon}</div>`;
+            }
+
+            // Match quality label
+            const label = m.match_label || "";
+            const labelColor = m.label_color || "#2f6d4b";
+            const debugScore = isDebugMode && typeof m.similarity_score === "number"
+                ? `<span class="match-label-debug">(${(m.similarity_score * 100).toFixed(0)}%)</span>`
+                : "";
+            const labelHtml = label
+                ? `<div><span class="match-label-badge" style="background:${labelColor}">${label}</span>${debugScore}</div>`
+                : "";
+
+            // Find in Store button (visible in associate mode via CSS)
+            const itemId = m.id || "";
+            const findInStoreHtml = `<button class="find-in-store-btn" type="button" onclick="alert('Check with your associate — Item ID: ${itemId}')">Find in Store</button>`;
+
+            // Price
+            const priceHtml = m.inventory && m.inventory.price
+                ? `<span class="match-card-price">$${m.inventory.price.toFixed(2)}</span>`
+                : "";
+
+            // Add to Wardrobe button
+            const inBasket = getWardrobeBasket().some(b => String(b.id) === String(m.id));
+            const wardrobeBtnClass = inBasket ? " in-wardrobe" : "";
+            const wardrobeBtnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+            const wardrobeBtnHtml = `<button class="add-to-wardrobe-btn${wardrobeBtnClass}" type="button">${wardrobeBtnLabel}</button>`;
+
+            card.innerHTML = `
+                ${inventoryHtml}
+                ${imgHtml}
+                <div class="match-card-body">
+                    <div class="match-card-name">${m.productDisplayName || "Unnamed Item"}</div>
+                    <div class="match-card-meta-row">
+                        <span class="match-card-type">${m.articleType || ""} · ${m.baseColour || ""}</span>
+                        ${priceHtml}
+                    </div>
+                    ${labelHtml}
+                    <p class="match-card-reasoning">${m.reasoning || ""}</p>
+                    <div class="feedback-row">
+                        <button class="icon-btn" data-action="like" type="button" title="Like">
+                            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-1 7H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9a2 2 0 0 0 1.9-1.4l2-6.5a2 2 0 0 0-1.9-2.6H14z"/><path d="M7 21V9"/></svg>
+                        </button>
+                        <button class="icon-btn" data-action="dislike" type="button" title="Dislike">
+                            <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l1-7h5a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-9a2 2 0 0 0-1.9 1.4l-2 6.5A2 2 0 0 0 8 15h2z"/><path d="M17 3v12"/></svg>
+                        </button>
+                        <button class="icon-btn" data-action="save" type="button" title="Save">
+                            <svg viewBox="0 0 24 24"><path d="M5 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v18l-7-4-7 4V4z"/></svg>
+                        </button>
+                    </div>
+                    ${findInStoreHtml}
+                    ${wardrobeBtnHtml}
+                </div>
+            `;
+
+            const likeBtn = card.querySelector('[data-action="like"]');
+            const dislikeBtn = card.querySelector('[data-action="dislike"]');
+            const saveBtn = card.querySelector('[data-action="save"]');
+
+            likeBtn.addEventListener("click", async () => {
+                await sendFeedback(m.id, "like");
+                card.classList.remove("disliked");
+                card.classList.add("liked");
+            });
+
+            dislikeBtn.addEventListener("click", async () => {
+                await sendFeedback(m.id, "dislike");
+                card.classList.remove("liked");
+                card.classList.add("disliked");
+            });
+
+            saveBtn.addEventListener("click", () => {
+                const exists = wishlist.some((w) => String(w.id) === String(m.id));
+                if (!exists) {
+                    wishlist.push({
+                        id: m.id,
+                        name: m.productDisplayName || "Unnamed Item",
+                        image_url: m.image_url || "",
+                    });
+                    saveWishlist();
+                    updateWishlistUI();
+                }
+            });
+
+            // Add to Wardrobe button
+            const wBtn = card.querySelector(".add-to-wardrobe-btn");
+            wBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const item = {
+                    id: m.id,
+                    productDisplayName: m.productDisplayName || "Unnamed Item",
+                    articleType: m.articleType || "",
+                    baseColour: m.baseColour || "",
+                    image_url: m.image_url || "",
+                    price: m.inventory?.price || null,
+                    source: "stylist"
+                };
+                const added = toggleWardrobeItem(item);
+                wBtn.classList.toggle("in-wardrobe", added);
+                wBtn.textContent = added ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+            });
+
+            return card;
+        }
+
+        // --- No Match State (FR-23) ---
+        function renderNoMatch() {
+            matchCount.textContent = "No matches";
+            matchesGrid.innerHTML = `
+                <div class="no-match">
+                    <div class="no-match-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                        </svg>
+                    </div>
+                    <h3>No matching pieces found</h3>
+                    <p>Our AI stylist couldn't find catalog items that complement your piece well enough. This can happen with very unique items or limited catalog coverage.</p>
+                    <div class="no-match-suggestions">
+                        <button class="btn" onclick="clearAll()">Try a different item</button>
+                        <button class="btn" onclick="analyzeBtn.click()">Retry analysis</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Discover (H7-04) ---
+        async function runDiscover() {
+            const occasion = $("discoverOccasion").value.trim();
+            if (!occasion) return;
+
+            const gender = getProfileGender();
+            const activeP = getActiveProfile();
+            const styleVibe = activeP ? (activeP.style_tags[0] || "Casual")
+                : (JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}").style_vibe || "Casual");
+
+            if (!gender && !activeP) {
+                openProfileModal();
+                return;
+            }
+
+            $("discoverSpinner").classList.remove("hidden");
+            $("discoverResults").classList.add("hidden");
+            $("discoverBtn").disabled = true;
+
+            try {
+                const res = await fetch("/wardrobe/discover", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        occasion,
+                        gender,
+                        style_vibe: styleVibe,
+                        top_k: 20
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Request failed");
+                renderDiscoverResults(data);
+
+                // Classify formality tier in parallel (H9-01-A)
+                classifyFormality(occasion);
+            } catch (err) {
+                $("discoverItemsGrid").innerHTML = `<p style="color:var(--danger)">${err.message}</p>`;
+                $("discoverResults").classList.remove("hidden");
+            } finally {
+                $("discoverSpinner").classList.add("hidden");
+                $("discoverBtn").disabled = false;
+            }
+        }
+
+        // --- Outfit Completeness (H9-01) ---
+        async function classifyFormality(occasion) {
+            try {
+                const res = await fetch("/api/classify-formality", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ occasion })
+                });
+                const data = await res.json();
+                if (res.ok && data.tier) {
+                    sessionStorage.setItem("formality_data", JSON.stringify({
+                        occasion,
+                        tier: data.tier,
+                        required_categories: data.required_categories
+                    }));
+                }
+            } catch { /* non-blocking */ }
+        }
+
+        // Category mapping: map wardrobe articleTypes to completeness categories
+        const CATEGORY_MAP = {
+            Top: ["Shirts", "Tshirts", "Tops", "Blouses", "Polos", "Sweaters", "Sweatshirts", "Tank Tops"],
+            Bottom: ["Trousers", "Jeans", "Shorts", "Skirts", "Leggings", "Chinos", "Pants"],
+            Outerwear: ["Jackets", "Blazers", "Coats", "Hoodie", "Windbreaker", "Parka"],
+            Footwear: ["Shoes", "Casual Shoes", "Formal Shoes", "Sports Shoes", "Sandals", "Boots", "Sneakers", "Heels", "Flip Flops", "Flats"],
+            Accessory: ["Watches", "Belts", "Bags", "Wallets", "Sunglasses", "Jewellery", "Scarves", "Ties", "Hats", "Caps"],
+        };
+
+        function getFilledCategories() {
+            const basket = getWardrobeBasket();
+            const filled = new Set();
+            for (const item of basket) {
+                const aType = (item.articleType || "").replace(/s$/, "");
+                for (const [cat, types] of Object.entries(CATEGORY_MAP)) {
+                    if (types.some(t => t.replace(/s$/, "").toLowerCase() === aType.toLowerCase())) {
+                        filled.add(cat);
+                        break;
+                    }
+                }
+            }
+            return filled;
+        }
+
+        function renderCompletenessBar() {
+            const container = $("completenessBar");
+            if (!container) return;
+
+            const raw = sessionStorage.getItem("formality_data");
+            if (!raw) { container.innerHTML = ""; return; }
+
+            const { occasion, tier, required_categories } = JSON.parse(raw);
+            const filled = getFilledCategories();
+            const total = required_categories.length;
+            const filledCount = required_categories.filter(c => filled.has(c)).length;
+            const percent = total > 0 ? Math.round((filledCount / total) * 100) : 0;
+
+            const missing = required_categories.filter(c => !filled.has(c));
+
+            container.innerHTML = `
+                <div class="completeness-card">
+                    <div class="completeness-header">Your outfit for: "${occasion}"</div>
+                    <div class="completeness-tier">Formality: ${tier}</div>
+                    <div class="completeness-categories">
+                        ${required_categories.map(c =>
+                            filled.has(c)
+                                ? `<span class="completeness-cat filled">✓ ${c}</span>`
+                                : `<span class="completeness-cat missing">✗ ${c}</span>`
+                        ).join("")}
+                    </div>
+                    <div class="completeness-progress-label">Progress: ${filledCount}/${total} categories</div>
+                    <div class="completeness-progress">
+                        <div class="completeness-progress-fill" style="width:${percent}%"></div>
+                    </div>
+                    ${missing.length > 0
+                        ? `<button class="completeness-cta" onclick="findMissingItems('${missing[0]}')">+ Find Missing Items</button>`
+                        : `<span style="color:#2D7A2D;font-weight:600;font-size:0.9rem;">✓ Outfit complete!</span>`
+                    }
+                </div>
+            `;
+        }
+
+        function findMissingItems(category) {
+            // Switch to AI Stylist keyword search with pre-filled query
+            showStylist();
+            setSearchMode("keyword");
+            const occasion = JSON.parse(sessionStorage.getItem("formality_data") || "{}").occasion || "";
+            $("keywordInput").value = `${category.toLowerCase()} for ${occasion}`;
+            runKeywordSearch();
+        }
+
+        function renderDiscoverResults(data) {
+            $("discoverConcept").textContent = data.outfit_concept || "";
+
+            // Group items by category
+            const groups = {};
+            for (const item of data.items || []) {
+                const cat = item.articleType || "Other";
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(item);
+            }
+
+            const container = $("discoverItemsGrid");
+            container.innerHTML = "";
+
+            for (const [category, items] of Object.entries(groups)) {
+                const header = document.createElement("div");
+                header.className = "discover-category-header";
+                header.textContent = category;
+                container.appendChild(header);
+
+                const grid = document.createElement("div");
+                grid.className = "discover-grid";
+                for (const item of items) {
+                    const inBasket = getWardrobeBasket().some(b => String(b.id) === String(item.id));
+                    const card = document.createElement("div");
+                    card.className = "discover-card";
+                    const btnClass = inBasket ? " in-wardrobe" : "";
+                    const btnLabel = inBasket ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+                    card.innerHTML = `
+                        ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">` : `<div style="aspect-ratio:3/4;background:var(--border-light);display:flex;align-items:center;justify-content:center;color:var(--muted);">No image</div>`}
+                        <div class="discover-card-body">
+                            <div class="discover-card-name">${item.name}</div>
+                            <div class="discover-card-meta">${item.articleType || ""} · ${item.baseColour || ""}</div>
+                            <button class="add-to-wardrobe-btn${btnClass}" type="button">${btnLabel}</button>
+                        </div>
+                    `;
+                    const wBtn = card.querySelector(".add-to-wardrobe-btn");
+                    wBtn.addEventListener("click", () => {
+                        const wardrobeItem = {
+                            id: item.id,
+                            productDisplayName: item.name || "Unnamed Item",
+                            articleType: item.articleType || "",
+                            baseColour: item.baseColour || "",
+                            image_url: item.image_url || "",
+                            price: null,
+                            source: "discover"
+                        };
+                        const added = toggleWardrobeItem(wardrobeItem);
+                        wBtn.classList.toggle("in-wardrobe", added);
+                        wBtn.textContent = added ? "✓ In Wardrobe" : "+ Add to Wardrobe";
+                    });
+                    grid.appendChild(card);
+                }
+                container.appendChild(grid);
+            }
+
+            $("discoverResults").classList.remove("hidden");
+        }
+
+        // --- My Wardrobe Board (H7-06, H8-02) ---
+        let _manageMode = false;
+        let _selectedForRemoval = new Set();
+
+        function renderMyWardrobe() {
+            renderCompletenessBar();
+            const basket = getWardrobeBasket();
+            const container = $("myWardrobeContent");
+
+            if (basket.length === 0) {
+                _manageMode = false;
+                _selectedForRemoval.clear();
+                container.innerHTML = `
+                    <div class="my-wardrobe-empty">
+                        <h3>Your wardrobe is empty</h3>
+                        <p>Save items from AI Stylist or Discover to build your outfit.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group by articleType
+            const groups = {};
+            let totalPrice = 0;
+            for (const item of basket) {
+                const cat = item.articleType || "Other";
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(item);
+                if (item.price) totalPrice += item.price;
+            }
+
+            // Build header
+            const manageActiveClass = _manageMode ? " active" : "";
+            const removeSelectedHtml = _manageMode
+                ? `<button class="btn-remove-selected" id="removeSelectedBtn" onclick="removeSelectedFromWardrobe()">Remove Selected (${_selectedForRemoval.size})</button>`
+                : "";
+            const summaryDisplay = _manageMode ? ' style="display:none;"' : "";
+
+            container.innerHTML = "";
+
+            // Summary + actions bar
+            const summaryEl = document.createElement("div");
+            summaryEl.className = "my-wardrobe-summary";
+            summaryEl.innerHTML = `
+                <div${summaryDisplay}>
+                    <span class="my-wardrobe-total">${basket.length} item${basket.length !== 1 ? "s" : ""}</span>
+                    ${totalPrice > 0 ? `<span style="margin-left:12px;color:var(--muted);">Total: $${totalPrice.toFixed(2)}</span>` : ""}
+                </div>
+                <div class="my-wardrobe-header-actions">
+                    ${removeSelectedHtml}
+                    <button class="btn-manage${manageActiveClass}" onclick="toggleManageMode()">${_manageMode ? "Done" : "Manage"}</button>
+                    <button class="btn-try-on" onclick="setWardrobeTab('tryon')">Try It On</button>
+                    <button class="btn-clear-all" onclick="confirmClearWardrobe()">Clear All</button>
+                </div>
+            `;
+            container.appendChild(summaryEl);
+
+            const manageModeClass = _manageMode ? " manage-mode" : "";
+
+            for (const [category, items] of Object.entries(groups)) {
+                const header = document.createElement("div");
+                header.className = "discover-category-header";
+                header.textContent = category;
+                container.appendChild(header);
+
+                const grid = document.createElement("div");
+                grid.className = `my-wardrobe-grid${manageModeClass}`;
+                for (const item of items) {
+                    const card = document.createElement("div");
+                    card.className = "my-wardrobe-card";
+                    const isChecked = _selectedForRemoval.has(String(item.id));
+                    const checkedClass = isChecked ? " checked" : "";
+
+                    // Source chip
+                    const source = item.source || "stylist";
+                    const chipClass = source === "discover" ? "from-discover" : source === "search" ? "from-search" : "from-stylist";
+                    const chipLabel = source === "discover" ? "From Discover" : source === "search" ? "From Search" : "From Stylist";
+
+                    card.innerHTML = `
+                        <div class="manage-checkbox${checkedClass}"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                        <button class="my-wardrobe-remove" title="Remove">×</button>
+                        ${item.image_url ? `<img src="${item.image_url}" alt="${item.productDisplayName}" loading="lazy">` : `<div style="aspect-ratio:3/4;background:var(--border-light);"></div>`}
+                        <div class="my-wardrobe-card-body">
+                            <div class="my-wardrobe-card-name">${item.productDisplayName || "Unnamed"}</div>
+                            ${item.price ? `<div class="my-wardrobe-card-price">$${item.price.toFixed(2)}</div>` : ""}
+                            <span class="source-chip ${chipClass}">${chipLabel}</span>
+                        </div>
+                    `;
+
+                    // × remove button
+                    card.querySelector(".my-wardrobe-remove").addEventListener("click", () => {
+                        removeFromWardrobe(String(item.id));
+                    });
+
+                    // Manage mode checkbox
+                    const checkbox = card.querySelector(".manage-checkbox");
+                    checkbox.addEventListener("click", () => {
+                        const id = String(item.id);
+                        if (_selectedForRemoval.has(id)) {
+                            _selectedForRemoval.delete(id);
+                        } else {
+                            _selectedForRemoval.add(id);
+                        }
+                        checkbox.classList.toggle("checked", _selectedForRemoval.has(id));
+                        // Update remove selected count
+                        const rsBtn = $("removeSelectedBtn");
+                        if (rsBtn) rsBtn.textContent = `Remove Selected (${_selectedForRemoval.size})`;
+                    });
+
+                    grid.appendChild(card);
+                }
+                container.appendChild(grid);
+            }
+        }
+
+        function toggleManageMode() {
+            _manageMode = !_manageMode;
+            if (!_manageMode) _selectedForRemoval.clear();
+            renderMyWardrobe();
+        }
+
+        function confirmClearWardrobe() {
+            const count = getWardrobeBasket().length;
+            $("confirmTitle").textContent = "Clear Wardrobe?";
+            $("confirmMsg").textContent = `Remove all ${count} item${count !== 1 ? "s" : ""} from your wardrobe? This cannot be undone.`;
+            const btn = $("confirmAction");
+            btn.textContent = "Clear All";
+            btn.onclick = () => {
+                saveWardrobeBasket([]);
+                $("confirmOverlay").classList.add("hidden");
+                _manageMode = false;
+                _selectedForRemoval.clear();
+                renderMyWardrobe();
+                showWardrobeToast("Wardrobe cleared");
+            };
+            $("confirmOverlay").classList.remove("hidden");
+        }
+
+        function removeSelectedFromWardrobe() {
+            if (_selectedForRemoval.size === 0) return;
+            let basket = getWardrobeBasket();
+            basket = basket.filter(b => !_selectedForRemoval.has(String(b.id)));
+            saveWardrobeBasket(basket);
+            _selectedForRemoval.clear();
+            renderMyWardrobe();
+            showWardrobeToast("Selected items removed");
+        }
+
+        function removeFromWardrobe(itemId) {
+            let basket = getWardrobeBasket();
+            basket = basket.filter(b => String(b.id) !== String(itemId));
+            saveWardrobeBasket(basket);
+            renderMyWardrobe();
+        }
+
+        // --- Try It On (H7-07, H8-04) ---
+        // Category order for z-index layering: footwear → bottoms → tops → outerwear
+        const TRYON_CATEGORY_ORDER = {
+            "Casual Shoes": 0, "Formal Shoes": 0, "Sneakers": 0, "Sports Shoes": 0,
+            "Heels": 0, "Flats": 0, "Sandals": 0, "Flip Flops": 0,
+            "Jeans": 1, "Trousers": 1, "Shorts": 1, "Track Pants": 1, "Skirts": 1,
+            "Shirts": 2, "Tshirts": 2, "Tops": 2, "Sweaters": 2, "Sweatshirts": 2,
+            "Kurtas": 2, "Kurtis": 2, "Tunics": 2, "Dresses": 2,
+            "Jackets": 3, "Blazers": 3,
+        };
+        const TRYON_LAYER_NAMES = ["Footwear", "Bottoms", "Tops", "Outerwear"];
+
+        let _tryonSelections = {}; // category → item
+
+        function renderTryOn() {
+            const basket = getWardrobeBasket();
+            const container = $("tryOnContent");
+
+            if (basket.length === 0) {
+                container.innerHTML = `
+                    <div class="my-wardrobe-empty">
+                        <h3>Add items to your wardrobe first</h3>
+                        <p>Save items from AI Stylist or Discover, then come back to try them on.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group items by their layer category
+            const layerGroups = {};
+            for (const item of basket) {
+                const at = item.articleType || "Other";
+                const layerIdx = TRYON_CATEGORY_ORDER[at];
+                const layerName = layerIdx !== undefined ? TRYON_LAYER_NAMES[layerIdx] : "Accessories";
+                if (!layerGroups[layerName]) layerGroups[layerName] = [];
+                layerGroups[layerName].push(item);
+            }
+
+            // Restore previous selections if still valid
+            for (const cat of Object.keys(_tryonSelections)) {
+                const items = layerGroups[cat];
+                if (!items || !items.some(i => String(i.id) === String(_tryonSelections[cat]?.id))) {
+                    delete _tryonSelections[cat];
+                }
+            }
+
+            container.innerHTML = "";
+
+            const title = document.createElement("h2");
+            title.className = "tryon-picker-title";
+            title.textContent = "Build Your Outfit";
+            container.appendChild(title);
+
+            // Incomplete outfit warning (H9-01-E)
+            const fRaw = sessionStorage.getItem("formality_data");
+            if (fRaw) {
+                const fd = JSON.parse(fRaw);
+                const filled = getFilledCategories();
+                const missing = (fd.required_categories || []).filter(c => !filled.has(c));
+                if (missing.length > 0) {
+                    const banner = document.createElement("div");
+                    banner.style.cssText = "background:rgba(200,170,100,0.12);border:1px solid rgba(200,170,100,0.3);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#8a6d3b;display:flex;justify-content:space-between;align-items:center;";
+                    banner.innerHTML = `<span>Your outfit may feel incomplete. Consider adding <strong>${missing.join(", ")}</strong> for a more polished look.</span><button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:#8a6d3b;padding:0 4px;">×</button>`;
+                    container.appendChild(banner);
+                }
+            }
+
+            // Category rows in layer order
+            const orderedLayers = ["Footwear", "Bottoms", "Tops", "Outerwear", "Accessories"];
+            for (const layerName of orderedLayers) {
+                const items = layerGroups[layerName];
+                if (!items || items.length === 0) continue;
+
+                const row = document.createElement("div");
+                row.className = "tryon-category-row";
+
+                const label = document.createElement("div");
+                label.className = "tryon-category-label";
+                label.textContent = `${layerName} (pick one)`;
+                row.appendChild(label);
+
+                const thumbRow = document.createElement("div");
+                thumbRow.className = "tryon-thumb-row";
+
+                for (const item of items) {
+                    const thumb = document.createElement("div");
+                    thumb.className = "tryon-thumb";
+                    const isSelected = _tryonSelections[layerName] && String(_tryonSelections[layerName].id) === String(item.id);
+                    if (isSelected) thumb.classList.add("selected");
+
+                    thumb.innerHTML = `
+                        ${item.image_url ? `<img src="${item.image_url}" alt="${item.productDisplayName || ''}">` : `<div style="width:100%;height:100%;background:var(--border-light);"></div>`}
+                        <div class="tryon-thumb-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    `;
+
+                    thumb.addEventListener("click", () => {
+                        if (_tryonSelections[layerName] && String(_tryonSelections[layerName].id) === String(item.id)) {
+                            delete _tryonSelections[layerName];
+                        } else {
+                            _tryonSelections[layerName] = item;
+                        }
+                        renderTryOn();
+                    });
+
+                    thumbRow.appendChild(thumb);
+                }
+                row.appendChild(thumbRow);
+                container.appendChild(row);
+            }
+
+            // Try This Outfit button
+            const selectedCount = Object.keys(_tryonSelections).length;
+            const tryBtn = document.createElement("button");
+            tryBtn.className = "tryon-try-btn";
+            tryBtn.textContent = "Try This Outfit";
+            tryBtn.disabled = selectedCount === 0;
+            tryBtn.addEventListener("click", () => startTryOn());
+            container.appendChild(tryBtn);
+
+            // Model options row
+            const optionsRow = document.createElement("div");
+            optionsRow.className = "tryon-options";
+            optionsRow.style.marginTop = "16px";
+            optionsRow.innerHTML = `
+                <div class="tryon-option-card" onclick="startTryOn('model')">
+                    <div class="tryon-icon">👤</div>
+                    <h3>AI Model</h3>
+                </div>
+                <div class="tryon-option-card" onclick="startTryOn('photo')">
+                    <div class="tryon-icon">📷</div>
+                    <h3>Your Photo</h3>
+                </div>
+            `;
+            container.appendChild(optionsRow);
+
+            const privacy = document.createElement("p");
+            privacy.className = "tryon-privacy";
+            privacy.textContent = "Your photo is processed client-side only and never uploaded to any server.";
+            container.appendChild(privacy);
+        }
+
+        function startTryOn(mode) {
+            const selected = Object.values(_tryonSelections);
+            if (selected.length === 0 && !mode) return;
+
+            const profile = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+            const gender = profile.gender || "Women";
+
+            if (mode === "photo") {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.onchange = (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => renderTryOnComposite(ev.target.result, selected.length > 0 ? selected : getWardrobeBasket());
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+                return;
+            }
+
+            // Model mode
+            let modelImg;
+            if (gender === "Men") {
+                modelImg = "/photos/john.png";
+            } else {
+                modelImg = "/photos/Lucy.png";
+            }
+
+            const items = selected.length > 0 ? selected : getWardrobeBasket().slice(0, 3);
+            renderTryOnComposite(modelImg, items);
+        }
+
+        function renderTryOnComposite(bgSrc, selectedItems) {
+            const container = $("tryOnContent");
+
+            // Show loading briefly
+            container.innerHTML = `<div class="tryon-loading">Putting your outfit together...</div>`;
+
+            setTimeout(() => {
+                // Sort by layer z-index: footwear(0) → bottoms(1) → tops(2) → outerwear(3)
+                const sorted = [...selectedItems].sort((a, b) => {
+                    const aLayer = TRYON_CATEGORY_ORDER[a.articleType] ?? 99;
+                    const bLayer = TRYON_CATEGORY_ORDER[b.articleType] ?? 99;
+                    return aLayer - bLayer;
+                });
+
+                const positions = [
+                    { top: "75%", left: "35%" },  // footwear
+                    { top: "50%", left: "35%" },  // bottoms
+                    { top: "15%", left: "35%" },  // tops
+                    { top: "5%", left: "35%" },   // outerwear
+                ];
+
+                let overlaysHtml = "";
+                sorted.forEach((item, i) => {
+                    if (item.image_url) {
+                        const pos = positions[i] || positions[0];
+                        overlaysHtml += `<img class="tryon-overlay-item" src="${item.image_url}" style="top:${pos.top};left:${pos.left};z-index:${i + 1};" alt="${item.productDisplayName || ''}">`;
+                    }
+                });
+
+                container.innerHTML = `
+                    <div class="tryon-composite">
+                        <div class="tryon-model-container" id="cssCompositeContainer">
+                            <img class="tryon-model-img" src="${bgSrc}" alt="Model">
+                            ${overlaysHtml}
+                        </div>
+                        <button class="tryon-gen-btn" onclick="startGenerativeTryOn()">✨ Generate AI Photo</button>
+                        <div id="generativeResult"></div>
+                        <div id="companionArea"></div>
+                        <p class="tryon-privacy">Your photo is processed client-side only and never uploaded to any server.</p>
+                        <button class="tryon-back-btn" onclick="renderTryOn()">← Change selection</button>
+                    </div>
+                `;
+                // Store context for generative try-on
+                window._tryonBgSrc = bgSrc;
+                window._tryonItems = selectedItems;
+                window._tryonIsPhoto = !bgSrc.startsWith("/photos/");
+                // Show companion trigger
+                renderCompanionTrigger(selectedItems);
+            }, 300);
+        }
+
+        // --- Generative Try-On (FR-42) ---
+        let _tryonPhotoBase64 = null;  // set when user uploads their photo
+
+        function startGenerativeTryOn() {
+            const container = $("generativeResult");
+            if (!container) return;
+
+            const profile = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+            const gender = profile.gender || "Women";
+            const styleVibe = (profile.style_tags || []).join(", ") || "contemporary";
+            const items = window._tryonItems || getWardrobeBasket();
+            const isPhoto = window._tryonIsPhoto;
+
+            // Build basket items payload
+            const basketItems = items.slice(0, 5).map(it => ({
+                name: it.productDisplayName || it.name || "",
+                articleType: it.articleType || "",
+                baseColour: it.baseColour || "",
+                productDisplayName: it.productDisplayName || it.name || "",
+            }));
+
+            // Check for cached description (30min TTL)
+            let cachedDesc = "";
+            const cacheRaw = sessionStorage.getItem("tryon_description");
+            if (cacheRaw) {
+                try {
+                    const cache = JSON.parse(cacheRaw);
+                    if (Date.now() - cache.ts < 30 * 60 * 1000) cachedDesc = cache.desc;
+                    else sessionStorage.removeItem("tryon_description");
+                } catch { sessionStorage.removeItem("tryon_description"); }
+            }
+
+            // Get person photo base64 if user uploaded (not model mode)
+            let personBase64 = "";
+            if (isPhoto && window._tryonBgSrc && window._tryonBgSrc.startsWith("data:")) {
+                personBase64 = window._tryonBgSrc.split(",")[1] || "";
+            }
+
+            // Show 3-phase spinner
+            container.innerHTML = `
+                <div class="tryon-gen-spinner">
+                    <div class="phase-text" id="genPhaseText">Analyzing your photo...</div>
+                    <div class="spinner-bar"><div class="spinner-fill"></div></div>
+                </div>
+            `;
+
+            // Animate phases
+            const phaseEl = $("genPhaseText");
+            setTimeout(() => { if (phaseEl) phaseEl.textContent = "Building your outfit..."; }, 5000);
+            setTimeout(() => { if (phaseEl) phaseEl.textContent = "Generating your look..."; }, 12000);
+
+            // Disable button
+            const btn = container.parentElement?.querySelector(".tryon-gen-btn");
+            if (btn) btn.disabled = true;
+
+            // Timeout controller (30s)
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 30000);
+
+            fetch("/wardrobe/tryon-generative", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    person_image_base64: personBase64,
+                    basket_items: basketItems,
+                    gender: gender,
+                    style_vibe: styleVibe,
+                    cached_description: cachedDesc,
+                }),
+                signal: controller.signal,
+            })
+            .then(r => {
+                clearTimeout(timeout);
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                // Cache the description for regeneration
+                if (data.description) {
+                    sessionStorage.setItem("tryon_description", JSON.stringify({
+                        desc: data.description,
+                        ts: Date.now(),
+                    }));
+                }
+
+                container.innerHTML = `
+                    <div class="tryon-gen-result">
+                        <img src="${data.generated_image_url}" alt="AI Generated Try-On">
+                        <div class="tryon-gen-disclaimer">AI-generated preview · Not a real photograph</div>
+                        <br>
+                        <button class="tryon-regen-btn" onclick="startGenerativeTryOn()">↻ Regenerate</button>
+                    </div>
+                `;
+                if (btn) btn.disabled = false;
+            })
+            .catch(err => {
+                clearTimeout(timeout);
+                console.warn("Generative try-on failed:", err);
+                container.innerHTML = "";
+                if (btn) btn.disabled = false;
+
+                // Show toast and keep CSS composite visible
+                const toast = document.createElement("div");
+                toast.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 24px;border-radius:8px;font-size:0.9rem;z-index:9999;";
+                toast.textContent = "Generation failed — showing preview instead";
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            });
+        }
+
+        // --- AI Stylist Companion (H8-05) ---
+        function getStoredOccasion() {
+            // Check if the user typed an occasion in Discover
+            const el = $("discoverOccasion");
+            return el ? el.value.trim() : "";
+        }
+
+        function renderCompanionTrigger(selectedItems) {
+            const area = $("companionArea");
+            if (!area) return;
+
+            area.innerHTML = "";
+
+            const btn = document.createElement("button");
+            btn.className = "companion-trigger";
+            btn.textContent = "Get Style Advice ✦";
+            btn.disabled = selectedItems.length === 0;
+            btn.addEventListener("click", () => {
+                const occasion = getStoredOccasion();
+                if (!occasion) {
+                    // No occasion typed — ask inline
+                    renderCompanionOccasionInput(selectedItems);
+                } else {
+                    runCompanionEval(occasion, selectedItems);
+                }
+            });
+            area.appendChild(btn);
+        }
+
+        function renderCompanionOccasionInput(selectedItems) {
+            const area = $("companionArea");
+            if (!area) return;
+
+            area.innerHTML = `
+                <div style="max-width:400px;margin:16px auto;text-align:center;">
+                    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:8px;">What's the occasion?</p>
+                    <input class="companion-occasion-input" id="companionOccasionInput" placeholder="e.g. casual dinner, summer evening">
+                    <button class="companion-trigger" id="companionGoBtn" disabled>Get Style Advice ✦</button>
+                </div>
+            `;
+
+            const input = $("companionOccasionInput");
+            const goBtn = $("companionGoBtn");
+            input.addEventListener("input", () => {
+                goBtn.disabled = !input.value.trim();
+            });
+            goBtn.addEventListener("click", () => {
+                const occasion = input.value.trim();
+                if (occasion) runCompanionEval(occasion, selectedItems);
+            });
+        }
+
+        async function runCompanionEval(occasion, selectedItems) {
+            const area = $("companionArea");
+            if (!area) return;
+
+            area.innerHTML = `<div class="companion-loading">✦ Your AI Stylist is reviewing your outfit...</div>`;
+
+            try {
+                const items = selectedItems.map(i => ({
+                    name: i.productDisplayName || "Item",
+                    category: i.articleType || "Other",
+                    description: `${i.baseColour || ""} ${i.articleType || ""}`.trim()
+                }));
+
+                const payload = { occasion, items };
+                const profileCtx = getProfileContextForCompanion();
+                if (profileCtx) payload.profile_context = profileCtx;
+                const purchaseCtx = getRecentPurchasesContext();
+                if (purchaseCtx) payload.purchase_context = purchaseCtx;
+                // Add formality tier (H9-01-D)
+                const formalityRaw = sessionStorage.getItem("formality_data");
+                if (formalityRaw) {
+                    const fd = JSON.parse(formalityRaw);
+                    if (fd.tier) payload.profile_context = (payload.profile_context || "") + ` The occasion is ${fd.tier}. Evaluate accordingly.`;
+                }
+
+                const res = await fetch("/api/companion-evaluate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Request failed");
+                renderCompanionPanel(data, occasion, selectedItems);
+            } catch (err) {
+                area.innerHTML = `
+                    <div class="companion-panel" style="text-align:center;padding:24px;">
+                        <p style="color:var(--danger);margin-bottom:12px;">Style advice unavailable. Try again.</p>
+                        <button class="companion-retry-btn" onclick="renderCompanionTrigger(Object.values(_tryonSelections))">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCompanionPanel(data, occasion, selectedItems) {
+            const area = $("companionArea");
+            if (!area) return;
+
+            const score = data.overall_score || 0;
+            const scoreColor = score >= 8 ? "#2D7A2D" : score >= 6 ? "#B8860B" : "#c0392b";
+            const scorePercent = Math.min(score * 10, 100);
+
+            let itemsHtml = "";
+            if (data.items && Array.isArray(data.items)) {
+                itemsHtml = data.items.map(it => {
+                    const s = it.score || 0;
+                    const icon = s >= 7 ? '<span class="companion-item-icon" style="color:#2D7A2D">✓</span>' : '<span class="companion-item-icon" style="color:#B8860B">⚠</span>';
+                    const color = s >= 7 ? "#2D7A2D" : "#B8860B";
+                    return `
+                        <li class="companion-item-row">
+                            <span class="companion-item-name">${it.name || "Item"}</span>
+                            <span class="companion-item-score" style="color:${color}">${s}/10</span>
+                            ${icon}
+                        </li>
+                    `;
+                }).join("");
+            }
+
+            area.innerHTML = `
+                <div class="companion-panel">
+                    <div class="companion-panel-header">✦ AI Stylist Companion</div>
+                    <div class="companion-panel-body">
+                        <div class="companion-occasion">Occasion: '${occasion}'</div>
+                        <div class="companion-score-row">
+                            <span class="companion-score-num" style="color:${scoreColor}">${score.toFixed(1)}</span>
+                            <span style="color:var(--muted);font-size:0.85rem;">/ 10</span>
+                            <div class="companion-score-bar">
+                                <div class="companion-score-fill" style="width:${scorePercent}%;background:${scoreColor};"></div>
+                            </div>
+                        </div>
+                        ${itemsHtml ? `<ul class="companion-items-list">${itemsHtml}</ul>` : ""}
+                        ${data.verdict ? `<div class="companion-verdict">${data.verdict}</div>` : ""}
+                        ${data.improvement ? `<div class="companion-improvement">💡 ${data.improvement}</div>` : ""}
+                        <button class="companion-retry-btn" onclick="_tryonSelections={};renderTryOn()">↻ Try a different combination</button>
+
+                        <!-- Post-companion feedback (H9-04-E) -->
+                        <div class="companion-feedback" id="companionFeedback">
+                            <div class="companion-feedback-q">Was this advice helpful?</div>
+                            <div class="companion-feedback-stars" id="feedbackStars">
+                                <button onclick="submitCompanionFeedback(3, this)">Very helpful ★★★</button>
+                                <button onclick="submitCompanionFeedback(2, this)">Somewhat ★★</button>
+                                <button onclick="submitCompanionFeedback(1, this)">Not really ★</button>
+                            </div>
+                            <div id="feedbackFollowup" class="hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function submitCompanionFeedback(rating, btn) {
+            document.querySelectorAll("#feedbackStars button").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+
+            if (rating === 1) {
+                $("feedbackFollowup").classList.remove("hidden");
+                $("feedbackFollowup").innerHTML = `
+                    <div class="companion-feedback-q" style="margin-top:8px;">What would you like more of?</div>
+                    <div class="companion-followup">
+                        <button onclick="recordFollowup('formal')">More formal options</button>
+                        <button onclick="recordFollowup('budget')">Lower price range</button>
+                        <button onclick="recordFollowup('colours')">Different colours</button>
+                        <button onclick="recordFollowup('brands')">Different brands</button>
+                    </div>
+                `;
+            } else {
+                $("feedbackFollowup").classList.add("hidden");
+                $("feedbackFollowup").innerHTML = "";
+                showWardrobeToast("Thanks for your feedback!");
+            }
+
+            // Store feedback
+            const stored = JSON.parse(sessionStorage.getItem("companion_feedback") || "[]");
+            stored.push({ rating, timestamp: Date.now() });
+            sessionStorage.setItem("companion_feedback", JSON.stringify(stored));
+        }
+
+        function recordFollowup(preference) {
+            const stored = JSON.parse(sessionStorage.getItem("companion_feedback") || "[]");
+            if (stored.length > 0) stored[stored.length - 1].followup = preference;
+            sessionStorage.setItem("companion_feedback", JSON.stringify(stored));
+            showWardrobeToast("Thanks — we'll adjust recommendations!");
+            $("feedbackFollowup").innerHTML = `<div style="color:var(--accent);font-size:0.85rem;margin-top:8px;">Noted! We'll consider this next time.</div>`;
+        }
+
+        // --- Contextual Prompts (H9-04-D) ---
+        const _dismissedPrompts = new Set(JSON.parse(sessionStorage.getItem("dismissed_prompts") || "[]"));
+
+        function checkContextualPrompts(targetEl) {
+            if (!targetEl) return;
+
+            const basket = getWardrobeBasket();
+            const fRaw = sessionStorage.getItem("formality_data");
+
+            // Trigger: 3+ items from same category
+            if (!_dismissedPrompts.has("fit_pref")) {
+                const catCount = {};
+                for (const item of basket) {
+                    const cat = item.articleType || "Other";
+                    catCount[cat] = (catCount[cat] || 0) + 1;
+                }
+                const topCat = Object.entries(catCount).find(([, c]) => c >= 3);
+                if (topCat) {
+                    renderContextualPrompt(targetEl, "fit_pref",
+                        `You seem to love ${topCat[0]}. Do you prefer`,
+                        ["Fitted", "Relaxed"],
+                        (answer) => {
+                            const profile = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+                            profile.fit_pref = answer;
+                            sessionStorage.setItem("wardrobe_profile", JSON.stringify(profile));
+                        }
+                    );
+                    return;
+                }
+            }
+
+            // Trigger: Formal occasion
+            if (!_dismissedPrompts.has("formal_style") && fRaw) {
+                const fd = JSON.parse(fRaw);
+                if (fd.tier === "Formal") {
+                    renderContextualPrompt(targetEl, "formal_style",
+                        "For formal occasions, do you prefer",
+                        ["Classic & Traditional", "Modern & Architectural"],
+                        (answer) => {
+                            const profile = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+                            profile.formal_style = answer;
+                            sessionStorage.setItem("wardrobe_profile", JSON.stringify(profile));
+                        }
+                    );
+                    return;
+                }
+            }
+
+            // Trigger: First Try It On visit
+            if (!_dismissedPrompts.has("accessories") && !sessionStorage.getItem("tryon_visited")) {
+                sessionStorage.setItem("tryon_visited", "true");
+                renderContextualPrompt(targetEl, "accessories",
+                    "Would you like recommendations to include Accessories & Jewellery?",
+                    ["Yes", "Not now"],
+                    (answer) => {
+                        const profile = JSON.parse(sessionStorage.getItem("wardrobe_profile") || "{}");
+                        profile.include_accessories = answer === "Yes";
+                        sessionStorage.setItem("wardrobe_profile", JSON.stringify(profile));
+                    }
+                );
+            }
+        }
+
+        function renderContextualPrompt(container, promptId, text, options, onAnswer) {
+            const el = document.createElement("div");
+            el.className = "contextual-prompt";
+            el.innerHTML = `
+                <span class="contextual-prompt-text">${text}</span>
+                <div class="contextual-prompt-options">
+                    ${options.map(o => `<button data-answer="${o}">${o}</button>`).join("")}
+                </div>
+                <button class="contextual-prompt-dismiss" title="Dismiss">×</button>
+            `;
+
+            el.querySelectorAll(".contextual-prompt-options button").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    onAnswer(btn.dataset.answer);
+                    dismissPrompt(promptId, el);
+                    showWardrobeToast("Preference saved!");
+                });
+            });
+            el.querySelector(".contextual-prompt-dismiss").addEventListener("click", () => {
+                dismissPrompt(promptId, el);
+            });
+
+            container.prepend(el);
+        }
+
+        function dismissPrompt(promptId, el) {
+            _dismissedPrompts.add(promptId);
+            sessionStorage.setItem("dismissed_prompts", JSON.stringify([..._dismissedPrompts]));
+            el.remove();
+        }
+
+        // Update setWardrobeTab to re-render content
+        const _origSetWardrobeTab = setWardrobeTab;
+        setWardrobeTab = function(tab) {
+            _origSetWardrobeTab(tab);
+            if (tab === "mywardrobe") {
+                renderMyWardrobe();
+                checkContextualPrompts($("myWardrobeContent"));
+            }
+            if (tab === "tryon") {
+                renderTryOn();
+                checkContextualPrompts($("tryOnContent"));
+            }
+            updateWardrobeTabCount();
+        };
+
+        // --- Event Listeners ---
+        dropzone.addEventListener("click", () => fileInput.click());
+        fileInput.addEventListener("change", (e) => setFile(e.target.files?.[0] || null));
+        clearBtn.addEventListener("click", clearAll);
+
+        dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+        dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+        dropzone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropzone.classList.remove("dragover");
+            setFile(e.dataTransfer?.files?.[0] || null);
+        });
+
+        analyzeBtn.addEventListener("click", async () => {
+            clearError();
+            resultsSection.classList.add("hidden");
+
+            if (!selectedFile) {
+                showError("Please select an image first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", selectedFile);
+            formData.append("search_mode", searchMode);
+            const occasion = occasionInput.value.trim();
+            if (occasion) {
+                formData.append("occasion", occasion);
+            }
+
+            setLoading(true);
+            try {
+                const res = await fetch("/analyze", { method: "POST", body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Request failed");
+                renderResults(data);
+            } catch (err) {
+                showError(err.message || "Something went wrong. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        wishlistFab.addEventListener("click", () => {
+            wishlistPanel.classList.toggle("hidden");
+        });
+
+        wishlist = loadWishlist();
+        updateWishlistUI();
+        updateWardrobeCount();
+    </script>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-brand-name">RetailNext</span>
+                <span class="footer-tagline">AI Stylist powered by GPToutfit</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Accessibility</a>
+                <a href="#">Contact Us</a>
+            </div>
+            <div class="footer-copy">
+                © 2025 RetailNext. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
